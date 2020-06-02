@@ -1,0 +1,10 @@
+INSERT INTO statistics.PLAYER (name) VALUES ('Leo Galdino');
+INSERT INTO statistics.PLAYER (name) VALUES ('Leo Vital');
+INSERT INTO statistics.PLAYER (name) VALUES ('Guga');
+INSERT INTO statistics.PLAYER (name) VALUES ('Gustavo');
+INSERT INTO statistics.PLAYER (name) VALUES ('Yago');
+INSERT INTO statistics.PLAYER (name) VALUES ('Digão');
+INSERT INTO statistics.PLAYER (name) VALUES ('Brenand');
+INSERT INTO statistics.PLAYER (name) VALUES ('Peiches');
+INSERT INTO statistics.PLAYER (name) VALUES ('Gordo');
+INSERT INTO statistics.PLAYER (name) VALUES ('Derk');
