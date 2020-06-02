@@ -2,19 +2,25 @@ CREATE TABLE IF NOT EXISTS statistics.PLAYER (
     id SERIAL PRIMARY KEY, 
     name CHARACTER(30) UNIQUE NOT NULL, 
     ranking REAL DEFAULT 0, 
-    avg_score REAL DEFAULT 0);
-
+    avg_score REAL DEFAULT 0
+);
 
 CREATE TABLE IF NOT EXISTS statistics.GAME (
     id SERIAL PRIMARY KEY,
     game_date DATE NOT NULL DEFAULT CURRENT_DATE, 
-    score REAL DEFAULT NULL);
+    score REAL DEFAULT NULL
+);
 
 CREATE TABLE IF NOT EXISTS statistics.PLAYER_GAME (
     id SERIAL PRIMARY KEY, 
     player_id INTEGER NOT NULL REFERENCES statistics.PLAYER,
     game_id INTEGER NOT NULL REFERENCES statistics.GAME,
-    score REAL NOT NULL);
+    kills INTEGER NOT NULL,
+    suicides INTEGER NOT NULL,
+    position INTEGER NOT NULL,
+    score REAL NOT NULL,
+    UNIQUE (player_id, game_id)
+);
 
 CREATE TABLE IF NOT EXISTS statistics.GAME_AVG_SCORE(
     id SERIAL PRIMARY KEY,
