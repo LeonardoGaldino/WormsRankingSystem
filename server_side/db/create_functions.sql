@@ -35,13 +35,12 @@ CREATE OR REPLACE FUNCTION update_game_score() RETURNS TRIGGER AS
                 WHERE
                     id = NEW.game_id;
                     
-            UPDATE GAME_AVG_SCORE 
+            UPDATE GAME_AVG_SCORE gas
                 SET 
-                    avg_score = (SELECT AVG(score) FROM GAME
-                        WHERE score IS NOT NULL AND insertion_timestamp >= 
-                            (SELECT insertion_timestamp FROM GAME_AVG_SCORE WHERE game_id = NEW.game_id))
+                    avg_score = (SELECT AVG(g.score) FROM GAME g
+                        WHERE g.score IS NOT NULL AND g.insertion_timestamp <= gas.insertion_timestamp)
                 WHERE
-                    insertion_timestamp >= 
+                    gas.insertion_timestamp >= 
                         (SELECT insertion_timestamp FROM GAME_AVG_SCORE WHERE game_id = NEW.game_id);
 
             RETURN NEW;
@@ -55,15 +54,15 @@ CREATE OR REPLACE FUNCTION update_game_score_deletion() RETURNS TRIGGER AS
                 SET 
                     score = (SELECT AVG(score) FROM PLAYER_GAME WHERE game_id = OLD.game_id)
                 WHERE
-                    id = OLD.id;
+                    id = OLD.game_id;
 
-            UPDATE GAME_AVG_SCORE 
+            UPDATE GAME_AVG_SCORE gas
                 SET 
-                    avg_score = (SELECT AVG(score) FROM GAME
-                        WHERE score IS NOT NULL AND insertion_timestamp >= 
-                            (SELECT insertion_timestamp FROM GAME_AVG_SCORE WHERE game_id = OLD.game_id))
+                    avg_score = (SELECT AVG(g.score) FROM GAME g
+                        WHERE g.score IS NOT NULL AND g.insertion_timestamp <= gas.insertion_timestamp)
                 WHERE
-                    insertion_timestamp >= (SELECT insertion_timestamp FROM GAME_AVG_SCORE WHERE game_id = OLD.game_id);
+                    gas.insertion_timestamp >= 
+                        (SELECT insertion_timestamp FROM GAME_AVG_SCORE WHERE game_id = OLD.game_id);
 
             RETURN OLD;
         END
