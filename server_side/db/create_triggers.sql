@@ -1,18 +1,12 @@
-CREATE TRIGGER tg_on_new_game
-    AFTER INSERT
-    ON game
-    FOR EACH ROW
-    EXECUTE PROCEDURE create_game_avg_score();
-
-CREATE TRIGGER tg_on_insert_player_game
+CREATE TRIGGER tg_on_insert_update_player_game_ranking
     AFTER INSERT
     OR UPDATE OF score
-    ON player_game
+    ON player_game_ranking
     FOR EACH ROW
-    EXECUTE PROCEDURE update_game_score();
+    EXECUTE PROCEDURE update_game_scores();
 
-CREATE TRIGGER tg_on_change_player_game
+CREATE TRIGGER tg_on_delete_player_game_ranking
     AFTER DELETE
-    ON player_game
+    ON player_game_ranking
     FOR EACH ROW
-    EXECUTE PROCEDURE update_game_score_deletion();
+    EXECUTE PROCEDURE update_game_scores_on_deletion();
