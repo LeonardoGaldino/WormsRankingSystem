@@ -8,8 +8,15 @@ import psycopg2
 
 app = Flask(__name__)
 CORS(app)
-conn = psycopg2.connect("dbname=worms user=lcgm password=123k321k")
-cursor = conn.cursor()
+conn1 = psycopg2.connect("dbname=worms user=lcgm password=123k321k")
+cursor1 = conn1.cursor()
+
+conn2 = psycopg2.connect("dbname=worms user=lcgm password=123k321k")
+cursor2 = conn2.cursor()
+
+conn3 = psycopg2.connect("dbname=worms user=lcgm password=123k321k")
+cursor3 = conn3.cursor()
+
 
 ranking_query = """
     SELECT 
@@ -95,8 +102,8 @@ def parse_ranking_response(raw_data):
 
 @app.route('/ranking', methods=['GET'])
 def ranking():
-    cursor.execute(ranking_query)
-    res = cursor.fetchall()
+    cursor1.execute(ranking_query)
+    res = cursor1.fetchall()
 
     parsed_data = parse_ranking_response(res)
 
@@ -121,8 +128,8 @@ def parse_games_response(raw_data):
 
 @app.route('/games', methods=['GET'])
 def games():
-    cursor.execute(games_query)
-    res = cursor.fetchall()
+    cursor2.execute(games_query)
+    res = cursor2.fetchall()
 
     parsed_data = parse_games_response(res)
 
@@ -140,8 +147,8 @@ def create_game():
         game_id = create_game()
 
         for player_stats in data_json:
-            cursor.execute(player_query, (player_stats['name'],))
-            player_result = cursor.fetchone()
+            cursor3.execute(player_query, (player_stats['name'],))
+            player_result = cursor3.fetchone()
             player_id, player_ranking = player_result[0], player_result[1]
 
             global_game_score_avg = get_global_game_avg_score(game_id)
@@ -150,40 +157,40 @@ def create_game():
                 int(player_stats['kills']), int(player_stats['suicides']), int(player_stats['position']))
             ranking_delta = compute_ranking_delta(player_id, game_id, game_avg_score, player_score)
 
-            cursor.execute(insert_player_stats_stmt, (player_id, 
+            cursor3.execute(insert_player_stats_stmt, (player_id, 
                 game_id, player_stats['kills'], player_stats['suicides'], player_stats['position']))
-            cursor.execute(insert_player_game_ranking_stmt, (player_id, game_id, player_score, ranking_delta))
+            cursor3.execute(insert_player_game_ranking_stmt, (player_id, game_id, player_score, ranking_delta))
     except Exception as e:
         print(e)
-        conn.rollback()
+        conn3.rollback()
         res = Response()
         res.status_code = 500
         return res
 
-    conn.commit()
+    conn3.commit()
     return {
         'game_id': game_id,
     }
 
 def create_game():
-    cursor.execute(insert_game_stmt)
-    game_id = cursor.fetchone()[0]
-    conn.commit()
+    cursor3.execute(insert_game_stmt)
+    game_id = cursor3.fetchone()[0]
+    conn3.commit()
     return game_id
 
 def get_game_avg_score(game_id):
-    cursor.execute(game_avg_query, (game_id,))
-    res = cursor.fetchone()[0]
+    cursor3.execute(game_avg_query, (game_id,))
+    res = cursor3.fetchone()[0]
     return 0 if res is None else float(res)
 
 def get_player_avg_score(player_id):
-    cursor.execute(player_avg_score_query, (player_id,))
-    res = cursor.fetchone()[0]
+    cursor3.execute(player_avg_score_query, (player_id,))
+    res = cursor3.fetchone()[0]
     return 0 if res is None else float(res)
 
 def get_global_game_avg_score(game_id):
-    cursor.execute(global_game_avg_query, (game_id,))
-    res = cursor.fetchone()
+    cursor3.execute(global_game_avg_query, (game_id,))
+    res = cursor3.fetchone()
     return 0 if res is None else float(res[0])
 
 def compute_score_from_json(player_stats):
