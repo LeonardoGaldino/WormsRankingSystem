@@ -34,7 +34,8 @@ ranking_query = """
 
 games_query = """
     SELECT
-        g.insertion_timestamp, 
+        g.id,
+        g.insertion_timestamp,
         p.name,
         ps.kills,
         ps.suicides,
@@ -112,18 +113,21 @@ def ranking():
 def parse_games_response(raw_data):
     date_index = {}
     for data in raw_data:
-        date = data[0]
-        parsed_date = '{}/{}/{}'.format(date.day, date.month, date.year)
-        games = date_index.get(parsed_date, [])
-        games.append({
-            'name': data[1].strip(),
-            'kills': data[2],
-            'suicides': data[3],
-            'position': data[4],
-            'score': data[5],
-            'ranking_delta': data[6],
+        insertion_ts = data[1]
+        parsed_date = '{}/{}/{}'.format(insertion_ts.day, insertion_ts.month, insertion_ts.year)
+        games_for_date = date_index.get(parsed_date, {})
+        # get game for given id
+        player_entries = games_for_date.get(data[0], []) 
+        player_entries.append({
+            'name': data[2].strip(),
+            'kills': data[3],
+            'suicides': data[4],
+            'position': data[5],
+            'score': data[6],
+            'ranking_delta': data[7],
         })
-        date_index[parsed_date] = games
+        games_for_date[data[0]] = player_entries
+        date_index[parsed_date] = games_for_date
     return date_index
 
 @app.route('/games', methods=['GET'])
