@@ -14,6 +14,8 @@ function App() {
   return (
     <div className="App">
       <Container>
+        <h1 style={{display: 'inline-block'}}>Worms Ranking System</h1>
+        <img style={{height: 100, position: 'relative', top: 20, marginLeft: 5}} src="./worms.png"></img>
         <RankingTable></RankingTable>
       </Container>
     </div>
@@ -46,10 +48,8 @@ class RankingTable extends React.Component {
     let v = await fetch('http://localhost:5000/ranking', {
       method: 'GET',
     });
-    let t = await v.json()
-    console.log(t);
     this.setState({
-      rows: t,
+      rows: await v.json(),
     });
   }
 
