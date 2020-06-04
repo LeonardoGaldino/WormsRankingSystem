@@ -10,6 +10,11 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import StarIcon from '@material-ui/icons/Star';
 
+// TODO: use dotenv and webpack to correctly set environment parameters
+const API_URL = 'http://localhost';
+const API_PORT = 5000;
+const API_ENDPOINT = `${API_URL}:${API_PORT}`;
+
 function App() {
   return (
     <div className="App">
@@ -37,7 +42,8 @@ class RankingNumberTableCell extends React.Component {
 }
 
 class RankingTable extends React.Component {
-
+  
+  requestPath = '/ranking'
   state = {
     rows: [],
   };
@@ -47,7 +53,7 @@ class RankingTable extends React.Component {
   }
 
   async fetchData() {
-    let v = await fetch('http://localhost:5000/ranking', {
+    let v = await fetch(`${API_ENDPOINT+this.requestPath}`, {
       method: 'GET',
     });
     this.setState({
@@ -87,6 +93,7 @@ class RankingTable extends React.Component {
 
 class Games extends React.Component {
 
+  requestPath = '/games'
   state = {
     games: [],
   };
@@ -96,7 +103,7 @@ class Games extends React.Component {
   }
 
   async fetchData() {
-    let v = await fetch('http://localhost:5000/games', {
+    let v = await fetch(`${API_ENDPOINT+this.requestPath}`, {
       method: 'GET',
     });
     this.setState({
