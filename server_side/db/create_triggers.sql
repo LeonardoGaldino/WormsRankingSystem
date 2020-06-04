@@ -1,6 +1,6 @@
 CREATE TRIGGER tg_on_insert_update_player_game_ranking
     AFTER INSERT
-    OR UPDATE OF score
+    OR UPDATE OF score, ranking_delta
     ON player_game_ranking
     FOR EACH ROW
     EXECUTE PROCEDURE update_game_scores();

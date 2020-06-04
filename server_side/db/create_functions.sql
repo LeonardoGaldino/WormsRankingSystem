@@ -1,7 +1,16 @@
 CREATE OR REPLACE FUNCTION update_game_scores() RETURNS TRIGGER AS 
     $$
+        DECLARE ranking_update FLOAT;
         BEGIN
             PERFORM update_game_scores_generic(NEW);
+
+            IF (TG_OP = 'INSERT') THEN
+                ranking_update := NEW.ranking_delta;
+            ELSIF (TG_OP = 'UPDATE') THEN
+                ranking_update := NEW.ranking_delta - OLD.ranking_delta;
+            END IF;
+
+            UPDATE PLAYER p SET ranking = p.ranking + ranking_update WHERE p.id = NEW.player_id;
             RETURN NEW;
         END
     $$ LANGUAGE plpgsql;
@@ -10,6 +19,7 @@ CREATE OR REPLACE FUNCTION update_game_scores_on_deletion() RETURNS TRIGGER AS
     $$
         BEGIN
             PERFORM update_game_scores_generic(OLD);
+            UPDATE PLAYER p SET ranking = p.ranking - OLD.ranking_delta WHERE p.id = OLD.player_id;
             RETURN OLD;
         END
     $$ LANGUAGE plpgsql;
