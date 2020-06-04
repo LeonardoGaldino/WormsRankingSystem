@@ -90,7 +90,7 @@ def safe_score(value):
     return 0 if value is None else value
 
 def parse_ranking_response(raw_data):
-    return [{'name': data[0], 'ranking': data[1], 'games': data[2],
+    return [{'name': data[0].strip(), 'ranking': data[1], 'games': data[2],
         'wins': data[3], 'score_avg': safe_score(data[4])} for data in raw_data]
 
 @app.route('/ranking', methods=['GET'])
@@ -109,7 +109,7 @@ def parse_games_response(raw_data):
         parsed_date = '{}/{}/{}'.format(date.day, date.month, date.year)
         games = date_index.get(parsed_date, [])
         games.append({
-            'name': data[1],
+            'name': data[1].strip(),
             'kills': data[2],
             'suicides': data[3],
             'position': data[4],
