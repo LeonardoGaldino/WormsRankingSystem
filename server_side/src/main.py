@@ -13,27 +13,30 @@ ranking_query = """
     SELECT 
         p.name, 
         p.ranking, 
-        (SELECT COUNT(*) FROM player_game pg2 WHERE pg2.player_id = p.id AND pg2.position = 1) as wins,
-        AVG(pg.score) as score_avg
+        (SELECT COUNT(*) FROM player_stats ps2 WHERE ps2.player_id = p.id) as games,
+        (SELECT COUNT(*) FROM player_stats ps2 WHERE ps2.player_id = p.id AND ps2.position = 1) as wins,
+        AVG(pgr.score) as score_avg
         FROM player p 
-        LEFT OUTER JOIN player_game pg ON p.id = pg.player_id 
-        GROUP BY (p.name, p.ranking, wins)
-        ORDER BY ranking, score_avg DESC NULLS LAST
+        LEFT OUTER JOIN player_game_ranking pgr ON p.id = pgr.player_id
+        LEFT OUTER JOIN player_stats ps ON p.id = ps.player_id 
+        GROUP BY (p.id, p.name, p.ranking, wins)
+        ORDER BY p.ranking DESC, score_avg DESC NULLS LAST
 """
 
 games_query = """
     SELECT
         g.insertion_timestamp, 
         p.name,
-        pg.kills,
-        pg.suicides,
-        pg.position,
-        pg.score,
-        pg.ranking_delta
-        FROM player_game pg
-        INNER JOIN game g ON g.id = pg.game_id
-        INNER JOIN player p ON p.id = pg.player_id 
-        ORDER BY (g.insertion_timestamp, pg.score, pg.position) DESC NULLS LAST
+        ps.kills,
+        ps.suicides,
+        ps.position,
+        pgr.score,
+        pgr.ranking_delta
+        FROM player_stats ps
+        INNER JOIN game g ON g.id = ps.game_id
+        INNER JOIN player p ON p.id = ps.player_id 
+        INNER JOIN player_game_ranking pgr ON pgr.id = p.id AND pgr.game_id = g.id 
+        ORDER BY (g.insertion_timestamp, pgr.score, ps.position) DESC NULLS LAST
 """
 
 player_query = """
@@ -46,36 +49,38 @@ player_query = """
 player_avg_score_query = """
     SELECT
         AVG(score)
-        FROM player_game
+        FROM player_game_ranking
         WHERE player_id = %s;
 """
 
 global_game_avg_query = """
     SELECT
-        gas.avg_score
-        FROM game_avg_score gas
-        WHERE gas.insertion_timestamp < (SELECT insertion_timestamp FROM game g WHERE g.id = %s)
-        AND gas.avg_score IS NOT NULL
-        ORDER BY gas.insertion_timestamp DESC LIMIT 1
+        g.avg_score_after
+        FROM game g
+        WHERE g.insertion_timestamp < (SELECT g2.insertion_timestamp FROM game g2 WHERE g2.id = %s)
+        AND g.avg_score_after IS NOT NULL
+        ORDER BY g.insertion_timestamp DESC LIMIT 1
 """
 
 insert_game_stmt = "INSERT INTO game DEFAULT VALUES RETURNING ID;"
 
-insert_player_game_stmt = """
-    INSERT INTO player_game (
+insert_player_stats_stmt = """
+    INSERT INTO player_stats (
         player_id, 
         game_id, 
         kills, 
         suicides, 
-        position, 
-        score, 
-        ranking_delta) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING ID;"""
+        position) 
+        VALUES (%s, %s, %s, %s, %s) RETURNING ID;
+"""
 
-update_player_ranking_stmt = """
-    UPDATE player
-    SET ranking = %s
-    WHERE id = %s;
+insert_player_game_ranking_stmt = """
+    INSERT INTO player_game_ranking (
+        player_id,
+        game_id,
+        score,
+        ranking_delta
+    ) VALUES (%s, %s, %s, %s);
 """
 
 # Changes None to 0
@@ -83,7 +88,8 @@ def safe_score(value):
     return 0 if value is None else value
 
 def parse_ranking_response(raw_data):
-    return [{'name': data[0], 'ranking': data[1], 'wins': data[2], 'score_avg': safe_score(data[3])} for data in raw_data]
+    return [{'name': data[0], 'ranking': data[1], 'games': data[2],
+        'wins': data[3], 'score_avg': safe_score(data[4])} for data in raw_data]
 
 @app.route('/ranking', methods=['GET'])
 def ranking():
@@ -126,10 +132,8 @@ def create_game():
 
     try:
         data_json = request.get_json(force=True)
-        print(data_json)
 
         game_avg_score = reduce(lambda acc, v: acc+compute_score_from_json(v), data_json, 0.0)/len(data_json)
-        print(game_avg_score)
 
         game_id = create_game()
 
@@ -143,12 +147,10 @@ def create_game():
             player_score = compute_score(
                 int(player_stats['kills']), int(player_stats['suicides']), int(player_stats['position']))
             ranking_delta = compute_ranking_delta(player_id, game_id, game_avg_score, player_score)
-            new_ranking = float(player_ranking) + ranking_delta
 
-            cursor.execute(insert_player_game_stmt, (player_id, 
-                game_id, player_stats['kills'], player_stats['suicides'], player_stats['position'],
-                str(player_score),  str(ranking_delta)))
-            cursor.execute(update_player_ranking_stmt, (new_ranking, player_id))
+            cursor.execute(insert_player_stats_stmt, (player_id, 
+                game_id, player_stats['kills'], player_stats['suicides'], player_stats['position']))
+            cursor.execute(insert_player_game_ranking_stmt, (player_id, game_id, player_score, ranking_delta))
     except Exception as e:
         print(e)
         conn.rollback()
