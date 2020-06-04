@@ -44,7 +44,7 @@ games_query = """
         FROM player_stats ps
         INNER JOIN game g ON g.id = ps.game_id
         INNER JOIN player p ON p.id = ps.player_id 
-        INNER JOIN player_game_ranking pgr ON pgr.id = p.id AND pgr.game_id = g.id 
+        INNER JOIN player_game_ranking pgr ON pgr.player_id = p.id AND pgr.game_id = g.id 
         ORDER BY (g.insertion_timestamp, pgr.score, ps.position) DESC NULLS LAST
 """
 
