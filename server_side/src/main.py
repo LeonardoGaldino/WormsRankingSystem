@@ -126,7 +126,7 @@ def parse_games_response(raw_data):
             'score': data[6],
             'ranking_delta': data[7],
         })
-        games_for_date[data[0]] = player_entries
+        games_for_date[data[0]] = sorted(player_entries, key=lambda v: v['position'])
         date_index[parsed_date] = games_for_date
     return date_index
 
