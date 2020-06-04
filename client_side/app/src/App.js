@@ -17,6 +17,8 @@ function App() {
         <h1 style={{display: 'inline-block'}}>Worms Ranking System</h1>
         <img style={{height: 100, position: 'relative', top: 20, marginLeft: 5}} src="./worms.png"></img>
         <RankingTable></RankingTable>
+        <h1>Games</h1>
+        <Games></Games>
       </Container>
     </div>
   );
@@ -80,6 +82,37 @@ class RankingTable extends React.Component {
               </TableBody>
             </Table>
           </MuiTableContainer>
+  }
+}
+
+class Games extends React.Component {
+
+  state = {
+    games: [],
+  };
+
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  async fetchData() {
+    let v = await fetch('http://localhost:5000/games', {
+      method: 'GET',
+    });
+    this.setState({
+      games: await v.json(),
+    });
+  }
+
+  render() {
+    return <h1>Hello, world from games</h1>;
+  }
+}
+
+class Game extends React.Component {
+
+  render() {
+    return <h1>Hello, world from game</h1>;
   }
 }
 
