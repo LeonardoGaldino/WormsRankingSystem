@@ -101,7 +101,7 @@ def parse_ranking_response(raw_data):
     return [{'name': data[0].strip(), 'ranking': data[1], 'games': data[2],
         'wins': data[3], 'score_avg': safe_score(data[4])} for data in raw_data]
 
-@app.route('worms/ranking', methods=['GET'])
+@app.route('/worms/ranking', methods=['GET'])
 def ranking():
     cursor1.execute(ranking_query)
     res = cursor1.fetchall()
@@ -130,7 +130,7 @@ def parse_games_response(raw_data):
         date_index[parsed_date] = games_for_date
     return date_index
 
-@app.route('worms/games', methods=['GET'])
+@app.route('/worms/games', methods=['GET'])
 def games():
     cursor2.execute(games_query)
     res = cursor2.fetchall()
@@ -139,7 +139,7 @@ def games():
 
     return json.dumps(parsed_data, ensure_ascii=False)
 
-@app.route('worms/create/game', methods=['POST'])
+@app.route('/worms/create/game', methods=['POST'])
 def create_game():
     game_id = None
 
