@@ -8,13 +8,13 @@ import psycopg2
 
 app = Flask(__name__)
 CORS(app)
-conn1 = psycopg2.connect("dbname=worms user=lcgm password=123k321k")
+conn1 = psycopg2.connect("dbname=worms user=lcgm host=localhost port=5432 password=123k321k")
 cursor1 = conn1.cursor()
 
-conn2 = psycopg2.connect("dbname=worms user=lcgm password=123k321k")
+conn2 = psycopg2.connect("dbname=worms user=lcgm host=localhost port=5432 password=123k321k")
 cursor2 = conn2.cursor()
 
-conn3 = psycopg2.connect("dbname=worms user=lcgm password=123k321k")
+conn3 = psycopg2.connect("dbname=worms user=lcgm host=localhost port=5432 password=123k321k")
 cursor3 = conn3.cursor()
 
 
