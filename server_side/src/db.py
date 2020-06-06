@@ -45,6 +45,14 @@ player_avg_score_query = """
         WHERE player_id = %s;
 """
 
+# Generate python string query
+game_avg_ranking_query = """
+    SELECT
+        AVG(ranking)
+        FROM player
+        WHERE id IN {};
+"""
+
 global_game_avg_query = """
     SELECT
         g.avg_score_after
@@ -77,21 +85,31 @@ insert_player_game_ranking_stmt = """
 
 class PostgresDB:
 
-    def __init__(self, connection_string):
+    def __init__(self, connection_string: str):
         self.conn = psycopg2.connect(connection_string)
         self.cursor = self.conn.cursor()
 
-    def get_player_avg_score(self, player_id):
+    def get_player_avg_score(self, player_id: int):
         self.cursor.execute(player_avg_score_query, (player_id,))
         res = self.cursor.fetchone()[0]
         return 0 if res is None else float(res)
 
-    def get_global_game_avg_score(self, game_id):
+    def get_global_game_avg_score(self, game_id: int):
         self.cursor.execute(global_game_avg_query, (game_id,))
         res = self.cursor.fetchone()
         return 0 if res is None else float(res[0])
 
-    def get_game_avg_score(self, game_id):
+    def get_game_avg_ranking(self, player_ids: [int]):
+        id_list = '('
+        for player_id in player_ids:
+            id_list += str(player_id) + ','
+        id_list = id_list[:-1] + ')'
+
+        self.cursor.execute(game_avg_ranking_query.format(id_list))
+        res = self.cursor.fetchone()[0]
+        return 0 if res is None else float(res)
+
+    def get_game_avg_score(self, game_id: int):
         self.cursor.execute(game_avg_query, (game_id,))
         res = self.cursor.fetchone()[0]
         return 0 if res is None else float(res)
@@ -114,16 +132,16 @@ class PostgresDB:
 
         return self.parse_games_response(res)
 
-    def get_player_data(self, player_name):
+    def get_player_data(self, player_name: str):
         self.cursor.execute(player_query, (player_name,))
         res = self.cursor.fetchone()
 
         return res[0], res[1]
 
-    def insert_player_stats(self, player_id, game_id, kills, suicides, position):
+    def insert_player_stats(self, player_id: int, game_id, kills: int, suicides: int, position: int):
         self.cursor.execute(insert_player_stats_stmt, (player_id, game_id, kills, suicides, position))
 
-    def insert_player_game_ranking(self, player_id, game_id, player_score, ranking_delta):
+    def insert_player_game_ranking(self, player_id: int, game_id: int, player_score: float, ranking_delta: float):
         self.cursor.execute(insert_player_game_ranking_stmt, (player_id, game_id, player_score, ranking_delta))
 
     def commit(self):
@@ -132,10 +150,10 @@ class PostgresDB:
     def rollback(self):
         self.conn.rollback()
 
-    def safe_score(self, value):
+    def safe_score(self, value: float):
         return 0 if value is None else value
 
-    def parse_games_response(self, raw_data):
+    def parse_games_response(self, raw_data: str):
         date_index = {}
         for data in raw_data:
             insertion_ts = data[1]
@@ -155,6 +173,6 @@ class PostgresDB:
             date_index[parsed_date] = games_for_date
         return date_index
 
-    def parse_ranking_response(self, raw_data):
+    def parse_ranking_response(self, raw_data: str):
         return [{'name': data[0].strip(), 'ranking': data[1], 'games': data[2],
             'wins': data[3], 'score_avg': self.safe_score(data[4])} for data in raw_data]
