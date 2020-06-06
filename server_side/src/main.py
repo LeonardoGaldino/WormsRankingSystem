@@ -2,6 +2,7 @@ import json
 from functools import reduce
 
 from .db import PostgresDB
+from .ranking import GameRankingComputer, PlayerStats
 
 from flask import Flask, request, Response
 from flask_cors import CORS
@@ -32,7 +33,6 @@ def ranking():
 @app.route('/worms/api/games', methods=['GET'], endpoint=get_games_endpoint)
 def games():
     db = db_conns[request.endpoint]
-
     return json.dumps(db.get_games(), ensure_ascii=False)
 
 @app.route('/worms/api/create/game', methods=['POST'], endpoint=create_game_endpoint)
@@ -43,22 +43,14 @@ def create_game():
     try:
         data_json = request.get_json(force=True)
 
-        game_avg_score = reduce(lambda acc, v: acc+compute_score_from_json(v), data_json, 0.0)/len(data_json)
-
         game_id = db.create_game()
+        stats = list(map(lambda player_stats: PlayerStats.from_json(db, player_stats), data_json))
+        ranker = GameRankingComputer(db, game_id, stats)
 
-        for player_stats in data_json:
-            player_id, player_ranking = db.get_player_data(player_stats['name'])
-
-            global_game_score_avg = db.get_global_game_avg_score(game_id)
-
-            player_score = compute_score(
-                int(player_stats['kills']), int(player_stats['suicides']), int(player_stats['position']))
-            ranking_delta = compute_ranking_delta(db, player_id, game_id, game_avg_score, player_score)
-
-            db.insert_player_stats(player_id, game_id, player_stats['kills'], 
-                player_stats['suicides'], player_stats['position'])
-            db.insert_player_game_ranking(player_id, game_id, player_score, ranking_delta)
+        updates = ranker.get_score_ranking_updates()
+        for player_stats, score, ranking_delta in updates:
+            player_stats.save(game_id)
+            db.insert_player_game_ranking(player_stats.id, game_id, score, ranking_delta)
     except Exception as e:
         db.rollback()
         raise e
@@ -67,25 +59,3 @@ def create_game():
     return {
         'game_id': game_id,
     }
-
-def compute_score_from_json(player_stats):
-    return compute_score(
-        int(player_stats['kills']), int(player_stats['suicides']), int(player_stats['position']))
-
-def compute_score(kills, suicides, position):
-        kill_points = 2.0*kills
-        suicide_points = 2.0**suicides
-        nominator = kill_points - suicide_points
-        
-        position_points = 0.2*(position-1)
-        denominator = 1 + position_points
-
-        return nominator/denominator if nominator > 0 else nominator*denominator
-
-def compute_ranking_delta(db, player_id, game_id, game_avg_score, score):
-    player_avg = db.get_player_avg_score(player_id)
-    global_game_avg = db.get_global_game_avg_score(game_id)
-
-    game_weight = 1.0 if global_game_avg == 0 else game_avg_score/global_game_avg
-
-    return (score-player_avg)*game_weight
