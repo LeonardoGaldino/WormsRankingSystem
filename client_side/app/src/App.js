@@ -138,8 +138,8 @@ class Game extends React.Component {
       <Table size='medium' aria-label="simple table">
         <TableHead>
           <TableRow>
-            <TableCell align="center"><strong>Posição</strong></TableCell>
             <TableCell align="center"><strong>Nome</strong></TableCell>
+            <TableCell align="center"><strong>Posição</strong></TableCell>
             <TableCell align="center"><strong>Kills</strong></TableCell>
             <TableCell align="center"><strong>Suicídios</strong></TableCell>
             <TableCell align="center"><strong>Score</strong></TableCell>
@@ -149,8 +149,8 @@ class Game extends React.Component {
         <TableBody>
           {this.props.playerEntries.map((entry, idx) => (
             <TableRow key={entry.name}>
-              <TableCell align="center" component="td" scope="entry">{entry.position}°</TableCell>
               <TableCell align="center" component="td" scope="entry">{entry.name}</TableCell>
+              <TableCell align="center" component="td" scope="entry">{entry.position}°</TableCell>
               <TableCell align="center" component="td" scope="entry">{entry.kills}</TableCell>
               <TableCell align="center" component="td" scope="entry">{entry.suicides}</TableCell>
               <TableCell align="center" component="td" scope="entry">{entry.score}</TableCell>
