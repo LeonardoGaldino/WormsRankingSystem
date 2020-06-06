@@ -45,7 +45,7 @@ class RankingNumberTableCell extends React.Component {
 
 class RankingTable extends React.Component {
   
-  requestPath = '/ranking'
+  requestPath = '/worms/api/ranking'
   state = {
     rows: [],
   };
@@ -101,7 +101,7 @@ class RankingTable extends React.Component {
 
 class Games extends React.Component {
 
-  requestPath = '/games'
+  requestPath = '/worms/api/games'
   state = {
     games: [],
   };
