@@ -123,7 +123,7 @@ class Games extends React.Component {
     return Object.keys(this.state.games).map(gameDate => {
       return <div key={gameDate+'div'}>
         <h3>{gameDate}</h3>
-        {Object.keys(this.state.games[gameDate]).map(gameId => 
+        {Object.keys(this.state.games[gameDate]).reverse().map(gameId => 
           <Game key={gameId} playerEntries={this.state.games[gameDate][gameId]}></Game>
         )}
       </div>;
