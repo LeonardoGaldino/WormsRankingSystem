@@ -1,0 +1,7 @@
+base: 0x400000
+player1_name: {0x360D8C, 0x80, 0x4BC, 0x4, 0x000045BC};
+name_kills1_offset: 0x78 (24 bytes before WORM name)
+name_damage1_offset: 0x7C (20 bytes before WORM name)
+name_self_damage1_offset: 0x84 (12 bytes before WORM name)
+worm_offset: 0x9C
+team_offset: 0x51C
