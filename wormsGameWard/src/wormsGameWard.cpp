@@ -7,11 +7,10 @@
 
 using namespace std;
 
-HANDLE hProcess;
-
 class WormsTeam {
 private:
     DWORD nameAddress;
+    HANDLE hProcess;
 public:
     const static DWORD nameKillsOffset = 0x00000078;
     const static DWORD nameDamageOffset = 0x0000007C;
@@ -24,7 +23,8 @@ public:
     int totalDamage;
     int selfDamage;
 
-    WormsTeam(DWORD nameAddress) {
+    WormsTeam(HANDLE hProcess, DWORD nameAddress) {
+        this->hProcess = hProcess;
         this->nameAddress = nameAddress;
         this->nWorms = 3;
         this->teamName = "Team at " + to_string(nameAddress) + " name not computed yet.";
@@ -49,7 +49,7 @@ public:
 
         char teamName[17];
         BOOL rpm_number = ReadProcessMemory(
-            hProcess,
+            this->hProcess,
             (LPCVOID) this->nameAddress,
             teamName,
             sizeof(teamName)*sizeof(char),
@@ -65,7 +65,7 @@ public:
             int selfDamageBuffer;
 
             BOOL rpm_number = ReadProcessMemory(
-                hProcess,
+                this->hProcess,
                 (LPCVOID) (this->nameAddress + i*WormsTeam::wormOffset + WormsTeam::nameKillsOffset),
                 &killsBuffer,
                 sizeof(int),
@@ -74,7 +74,7 @@ public:
             tmpKills += killsBuffer;
 
             rpm_number = ReadProcessMemory(
-                hProcess,
+                this->hProcess,
                 (LPCVOID) (this->nameAddress + i*WormsTeam::wormOffset + WormsTeam::nameDamageOffset),
                 &damageBuffer,
                 sizeof(int),
@@ -83,7 +83,7 @@ public:
             tmpTotalDamage += damageBuffer;
 
             rpm_number = ReadProcessMemory(
-                hProcess,
+                this->hProcess,
                 (LPCVOID) (this->nameAddress + i*WormsTeam::wormOffset + WormsTeam::nameSelfDamageOffset),
                 &selfDamageBuffer,
                 sizeof(int),
@@ -107,6 +107,7 @@ public:
 
 class WormsGame {
 private:
+    HANDLE hProcess;
     DWORD baseAddress;
     int nTeams;
     int watchStall;
@@ -115,13 +116,14 @@ public:
     const static DWORD teamOffset = 0x0000051C;
     const static DWORD player1NameOffset = 0x000045BC;
 
-    WormsGame(DWORD baseAddress, int nTeams, int watchStall) {
+    WormsGame(HANDLE hProcess, DWORD baseAddress, int nTeams, int watchStall) {
+        this->hProcess = hProcess;
         this->baseAddress = baseAddress;
         this->nTeams = nTeams;
         this->watchStall = watchStall;
         for(int i = 0 ; i < nTeams ; ++i) {
             DWORD teamNameAddress = this->baseAddress + WormsGame::player1NameOffset + i*WormsGame::teamOffset;
-            WormsTeam* team = new WormsTeam(teamNameAddress);
+            WormsTeam* team = new WormsTeam(hProcess, teamNameAddress);
             this->teams.push_back(team);
         }
     }
@@ -167,15 +169,16 @@ int main() {
     cout << "Attach to process with PID: ";
     cin >> wormsPid;
 
-    hProcess = OpenProcess(
+    HANDLE hProcess = OpenProcess(
         PROCESS_VM_READ,
         FALSE,
         wormsPid
     );
 
     if (hProcess == NULL) {
-        cout << GetLastError() << endl;
-        return 0;
+        cout << "Could not attach to process. Error: " << GetLastError() << endl;
+        cout << "Exiting..." << endl;
+        return 1;
     }
     cout << "Attached" << endl;
 
@@ -202,7 +205,7 @@ int main() {
             base = buffer;
         }
 
-        WormsGame game = WormsGame(base, nTeams, 1000);
+        WormsGame game = WormsGame(hProcess, base, nTeams, 1000);
 
         game.watchGame();
     }
