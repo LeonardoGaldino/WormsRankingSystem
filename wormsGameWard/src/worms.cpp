@@ -48,7 +48,7 @@ public:
         int tmpSelfDamage = 0;
 
         char teamName[17];
-        BOOL rpm_number = ReadProcessMemory(
+        ReadProcessMemory(
             this->hProcess,
             (LPCVOID) this->nameAddress,
             teamName,
@@ -59,12 +59,12 @@ public:
         this->teamName = string(teamName);
 
         for(int i = 0 ; i < this->nWorms ; ++i) {
-            size_t read;
+            SIZE_T read;
             int killsBuffer;
             int damageBuffer;
             int selfDamageBuffer;
 
-            BOOL rpm_number = ReadProcessMemory(
+            ReadProcessMemory(
                 this->hProcess,
                 (LPCVOID) (this->nameAddress + i*WormsTeam::wormOffset + WormsTeam::nameKillsOffset),
                 &killsBuffer,
@@ -73,7 +73,7 @@ public:
             );
             tmpKills += killsBuffer;
 
-            rpm_number = ReadProcessMemory(
+            ReadProcessMemory(
                 this->hProcess,
                 (LPCVOID) (this->nameAddress + i*WormsTeam::wormOffset + WormsTeam::nameDamageOffset),
                 &damageBuffer,
@@ -82,7 +82,7 @@ public:
             );
             tmpTotalDamage += damageBuffer;
 
-            rpm_number = ReadProcessMemory(
+            ReadProcessMemory(
                 this->hProcess,
                 (LPCVOID) (this->nameAddress + i*WormsTeam::wormOffset + WormsTeam::nameSelfDamageOffset),
                 &selfDamageBuffer,

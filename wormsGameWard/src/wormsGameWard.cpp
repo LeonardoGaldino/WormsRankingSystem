@@ -1,10 +1,41 @@
 #include <iostream>
 #include <windows.h>
 #include <tlhelp32.h>
+#include <Psapi.h>
 
 #include "worms.cpp"
 
 using namespace std;
+
+DWORD findModuleBaseAddress(HANDLE hProcess)
+{
+    DWORD baseAddress = 0x400000;
+    HMODULE *moduleArray;
+    LPBYTE moduleArrayBytes;
+    DWORD bytesRequired;
+
+    if (EnumProcessModules(hProcess, NULL, 0, &bytesRequired))
+    {
+        if (bytesRequired)
+        {
+            moduleArrayBytes = (LPBYTE)LocalAlloc(LPTR, bytesRequired);
+
+            if (moduleArrayBytes)
+            {
+                moduleArray = (HMODULE *)moduleArrayBytes;
+
+                if (EnumProcessModules(hProcess, moduleArray, bytesRequired, &bytesRequired))
+                {
+                    baseAddress = (DWORD_PTR)moduleArray[0];
+                }
+
+                LocalFree(moduleArrayBytes);
+            }
+        }
+    }
+
+    return baseAddress;
+}
 
 int findPid(char* processName) {
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -45,7 +76,7 @@ int main() {
     cout << "PID " << wormsPid << " found for process " << processName << "." << endl;
 
     HANDLE hProcess = OpenProcess(
-        PROCESS_VM_READ,
+        PROCESS_ALL_ACCESS,
         FALSE,
         wormsPid
     );
@@ -64,13 +95,13 @@ int main() {
         cout << "Number of teams: " << nTeams << endl;
         cout << "Started watching current game. " << endl;
 
-        DWORD base = (DWORD) 0x400000;
+        DWORD base = findModuleBaseAddress(hProcess);
         DWORD offs[] = {0x360D8C, 0x80, 0x4BC, 0x4};
         int ns = sizeof(offs)/sizeof(DWORD);
 
         for(int i = 0 ; i < ns ; ++i) {
             DWORD buffer;
-            BOOL rpm_number = ReadProcessMemory(
+            ReadProcessMemory(
                 hProcess,
                 (LPCVOID) (base + offs[i]),
                 &buffer,
