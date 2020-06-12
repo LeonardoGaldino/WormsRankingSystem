@@ -1,14 +1,48 @@
 #include <iostream>
 #include <windows.h>
+#include <tlhelp32.h>
 
 #include "worms.cpp"
 
 using namespace std;
 
+int findPid(char* processName) {
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+    if (hSnap == INVALID_HANDLE_VALUE) {
+        cout << "Failed to get process snap handle. Error: " << GetLastError() << endl;
+        return -1;
+    }
+
+    PROCESSENTRY32 pe32;
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+
+    // Retrieve information about the first process and exit if unsuccessful
+    if (!Process32First(hSnap, &pe32)) {
+        cout << "Failed to get first process entry. Error: " << GetLastError() << endl;
+        CloseHandle(hSnap);
+        return -1;
+    }
+
+    int pid = 0;
+    do {
+        if (strcmp(pe32.szExeFile, processName) == 0) {
+            pid = pe32.th32ProcessID;
+        }
+    } while (Process32Next(hSnap, &pe32));
+
+    CloseHandle(hSnap);
+    return pid;
+}
+
 int main() {
-    int wormsPid;
-    cout << "Attach to process with PID: ";
-    cin >> wormsPid;
+    char processName[] = "WA.exe";
+    int wormsPid = findPid(processName);
+    if (wormsPid <= 0) {
+        cout << "Couldn't find a PID for " << processName << ". Is it running?" << endl;
+        return 1;
+    }
+    cout << "PID " << wormsPid << " found for process " << processName << "." << endl;
 
     HANDLE hProcess = OpenProcess(
         PROCESS_VM_READ,
@@ -21,7 +55,7 @@ int main() {
         cout << "Exiting..." << endl;
         return 1;
     }
-    cout << "Attached" << endl;
+    cout << "Attached to " << processName << " (" << wormsPid << ")." << endl;
 
     while(true) {
         int nTeams;
