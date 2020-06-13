@@ -5,12 +5,11 @@ ranking_query = """
         p.name, 
         p.ranking, 
         (SELECT COUNT(*) FROM player_stats ps2 WHERE ps2.player_id = p.id) as games,
-        (SELECT COUNT(*) FROM player_stats ps2 WHERE ps2.player_id = p.id AND ps2.position = 1) as wins,
         AVG(pgr.score) as score_avg
         FROM player p 
         LEFT OUTER JOIN player_game_ranking pgr ON p.id = pgr.player_id
         LEFT OUTER JOIN player_stats ps ON p.id = ps.player_id 
-        GROUP BY (p.id, p.name, p.ranking, wins)
+        GROUP BY (p.id, p.name, p.ranking)
         ORDER BY p.ranking DESC, score_avg DESC NULLS LAST
 """
 
@@ -20,22 +19,22 @@ games_query = """
         g.insertion_timestamp,
         p.name,
         ps.kills,
-        ps.suicides,
-        ps.position,
+        ps.damage,
+        ps.self_damage,
         pgr.score,
         pgr.ranking_delta
         FROM player_stats ps
         INNER JOIN game g ON g.id = ps.game_id
         INNER JOIN player p ON p.id = ps.player_id 
         INNER JOIN player_game_ranking pgr ON pgr.player_id = p.id AND pgr.game_id = g.id 
-        ORDER BY (g.insertion_timestamp, pgr.score, ps.position) DESC NULLS LAST
+        ORDER BY (g.insertion_timestamp, pgr.score) DESC NULLS LAST
 """
 
 player_query = """
     SELECT
         id, ranking
         FROM player
-        WHERE name = %s;
+        WHERE LOWER(name) = LOWER(%s);
 """
 
 player_avg_score_query = """
@@ -62,15 +61,16 @@ global_game_avg_query = """
         ORDER BY g.insertion_timestamp DESC LIMIT 1
 """
 
-insert_game_stmt = "INSERT INTO game DEFAULT VALUES RETURNING ID;"
+insert_game_ts_stmt = "INSERT INTO game (insertion_timestamp) VALUES (to_timestamp(%s)) RETURNING ID;"
+insert_game_no_ts_stmt = "INSERT INTO game DEFAULT VALUES RETURNING ID;"
 
 insert_player_stats_stmt = """
     INSERT INTO player_stats (
         player_id, 
         game_id, 
         kills, 
-        suicides, 
-        position) 
+        damage, 
+        self_damage) 
         VALUES (%s, %s, %s, %s, %s) RETURNING ID;
 """
 
@@ -114,8 +114,12 @@ class PostgresDB:
         res = self.cursor.fetchone()[0]
         return 0 if res is None else float(res)
 
-    def create_game(self):
-        self.cursor.execute(insert_game_stmt)
+    def create_game(self, game_ts = None):
+        if game_ts is None:
+            self.cursor.execute(insert_game_no_ts_stmt)
+        else:
+            self.cursor.execute(insert_game_ts_stmt, (game_ts,))
+
         game_id = self.cursor.fetchone()[0]
         self.conn.commit()
         return game_id
@@ -138,8 +142,8 @@ class PostgresDB:
 
         return res[0], res[1]
 
-    def insert_player_stats(self, player_id: int, game_id, kills: int, suicides: int, position: int):
-        self.cursor.execute(insert_player_stats_stmt, (player_id, game_id, kills, suicides, position))
+    def insert_player_stats(self, player_id: int, game_id, kills: int, damage: int, self_damage: int):
+        self.cursor.execute(insert_player_stats_stmt, (player_id, game_id, kills, damage, self_damage))
 
     def insert_player_game_ranking(self, player_id: int, game_id: int, player_score: float, ranking_delta: float):
         self.cursor.execute(insert_player_game_ranking_stmt, (player_id, game_id, player_score, ranking_delta))
@@ -164,15 +168,16 @@ class PostgresDB:
             player_entries.append({
                 'name': data[2].strip(),
                 'kills': data[3],
-                'suicides': data[4],
-                'position': data[5],
+                'damage': data[4],
+                'self_damage': data[5],
                 'score': data[6],
                 'ranking_delta': data[7],
             })
-            games_for_date[data[0]] = sorted(player_entries, key=lambda v: v['position'])
+            #games_for_date[data[0]] = sorted(player_entries, key=lambda v: v['position'])
+            games_for_date[data[0]] = player_entries
             date_index[parsed_date] = games_for_date
         return date_index
 
     def parse_ranking_response(self, raw_data: str):
         return [{'name': data[0].strip(), 'ranking': data[1], 'games': data[2],
-            'wins': data[3], 'score_avg': self.safe_score(data[4])} for data in raw_data]
+            'score_avg': self.safe_score(data[3])} for data in raw_data]

@@ -43,8 +43,14 @@ def create_game():
     try:
         data_json = request.get_json(force=True)
 
-        game_id = db.create_game()
-        stats = list(map(lambda player_stats: PlayerStats.from_json(db, player_stats), data_json))
+        if not data_json.get('player_stats', []):
+            return Response(status=400)
+
+        game_ts = data_json.get('game_ts', None)
+        players_stats = data_json['player_stats']
+        game_id = db.create_game(game_ts)
+
+        stats = list(map(lambda player_stats: PlayerStats.from_json(db, player_stats), players_stats))
         ranker = GameRankingComputer(db, game_id, stats)
 
         updates = ranker.get_score_ranking_updates()

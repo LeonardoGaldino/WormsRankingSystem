@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS PLAYER_STATS (
     player_id INTEGER NOT NULL REFERENCES PLAYER,
     game_id INTEGER NOT NULL REFERENCES GAME,
     kills INTEGER NOT NULL,
-    suicides INTEGER NOT NULL,
-    position INTEGER NOT NULL,
+    damage INTEGER NOT NULL,
+    self_damage INTEGER NOT NULL,
     UNIQUE (player_id, game_id)
 );
 

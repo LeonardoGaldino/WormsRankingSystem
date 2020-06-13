@@ -8,3 +8,4 @@ INSERT INTO PLAYER (name) VALUES ('Brenand');
 INSERT INTO PLAYER (name) VALUES ('Peiches');
 INSERT INTO PLAYER (name) VALUES ('Gordo');
 INSERT INTO PLAYER (name) VALUES ('Derk');
+INSERT INTO PLAYER (name) VALUES ('Kastor');

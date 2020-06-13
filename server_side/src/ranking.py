@@ -1,27 +1,37 @@
 from functools import reduce
+import json
 
 from .db import PostgresDB
 
 class PlayerStats:
 
-    def __init__(self, db: PostgresDB, name: str, kills: int, suicides: int, position: int):
+    def __init__(self, db: PostgresDB, name: str, kills: int, damage: int, self_damage: int):
         self.db = db
         self.id = self.db.get_player_data(name)[0]
         self.name = name
         self.kills = kills
-        self.suicides = suicides
-        self.position = position
+        self.damage = damage
+        self.self_damage = self_damage
 
     def save(self, game_id):
-        self.db.insert_player_stats(self.id, game_id, self.kills, self.suicides, self.position)
+        self.db.insert_player_stats(self.id, game_id, self.kills, self.damage, self.self_damage)
+
+    @staticmethod
+    def get_mapped_name(team_name: str):
+        with open('team_map.json', 'r') as file:
+            team_mapping = json.loads(file.read())
+            if team_name.lower() not in team_mapping:
+                raise LookupError('Team {} doesn\'t exists.'.format(team_name))
+            return team_mapping[team_name.lower()]
 
     @staticmethod
     def from_json(db: PostgresDB, json):
-        return PlayerStats(db, json.get('name', None), json.get('kills', None),
-            json.get('suicides', None), json.get('position', None))
+        team_name = json.get('team_name', '')
+        name = PlayerStats.get_mapped_name(team_name)
+        return PlayerStats(db, name, json.get('kills', 0), json.get('damage', 0), json.get('self_damage', 0))
 
     def __repr__(self):
-        return 'PlayerStats({}, {}, {}, {})'.format(self.name, self.kills, self.suicides, self.position)
+        return 'PlayerStats({}, {}, {}, {})'.format(self.name, self.kills, self.damage, self.self_damage)
 
 class GameRankingComputer:
 
@@ -40,14 +50,11 @@ class GameRankingComputer:
             self.game_stats))
 
     def compute_score(self, stats: PlayerStats) -> float:
-        kill_points = 2.0*stats.kills
-        suicide_points = 2.0**stats.suicides
-        nominator = kill_points - suicide_points
-        
-        position_points = 0.2*(stats.position-1)
-        denominator = 1 + position_points
+        kill_points = 0.20 * stats.kills
+        damage_points = 0.8 * stats.damage/100.0
+        self_damage_points = 0.5 * stats.self_damage/100.0
 
-        return nominator/denominator if nominator > 0 else nominator*denominator
+        return kill_points + damage_points - self_damage_points
 
     def compute_delta_ranking(self, stats: PlayerStats) -> float:
         player_score = self.compute_score(stats)
