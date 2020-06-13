@@ -38,7 +38,7 @@ public:
     }
 
     void save(ofstream* file) {
-        *file << this->teamName << ": " << this->kills << " " << this->totalDamage << " " << this->selfDamage << endl;
+        *file << this->teamName << " " << this->kills << " " << this->totalDamage << " " << this->selfDamage << endl;
     }
 
     // TODO: Check for errors.
