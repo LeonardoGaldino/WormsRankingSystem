@@ -141,9 +141,7 @@ public:
 
         long int start = (long int) time(NULL);
         string fileName = "game_data_" + to_string(start);
-        char cFileName[fileName.size()+1];
-        strcpy(cFileName, &fileName[0]);
-        ofstream* file = new ofstream(cFileName);
+        ofstream* file = new ofstream(fileName.c_str());
 
         while(!gameEnd) {
             for(int i = 0 ; !gameEnd && i < this->nTeams ; ++i) {
@@ -158,7 +156,10 @@ public:
             }
         }
         long int end = (long int) time(NULL);
-        *file << "end:" << to_string(end) << endl;
+        *file << "end " << to_string(end) << endl;
         file->close();
+
+        string command = "start python src/save_game_data.py " + fileName;
+        system(command.c_str());
     }
 };
