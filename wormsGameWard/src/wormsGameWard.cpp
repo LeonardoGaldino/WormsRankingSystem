@@ -96,6 +96,7 @@ int main() {
         cout << "Started watching current game. " << endl;
 
         DWORD base = findModuleBaseAddress(hProcess);
+        cout << "WA.exe module address: " << hex << base << endl;
         DWORD offs[] = {0x360D8C, 0x80, 0x4BC, 0x4};
         int ns = sizeof(offs)/sizeof(DWORD);
 
