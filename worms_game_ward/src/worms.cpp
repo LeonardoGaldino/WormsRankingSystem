@@ -38,7 +38,7 @@ public:
     }
 
     void save(ofstream* file) {
-        *file << this->teamName << " " << this->kills << " " << this->totalDamage << " " << this->selfDamage << endl;
+        *file << this->teamName << "|" << this->kills << "|" << this->totalDamage << "|" << this->selfDamage << endl;
     }
 
     // TODO: Check for errors.
@@ -136,6 +136,13 @@ public:
         this->baseAddress = 0x0;
     }
 
+    void printEndGameTime(time_t* endTs) {
+        tm* ptm = localtime(endTs);
+        char buffer[32];
+        strftime(buffer, 32, "%d/%m/%Y %H:%M:%S", ptm);  
+        cout << "Game ended at: " << string(buffer) << endl; 
+    }
+
     void watchGame() {
         bool gameEnd = false;
 
@@ -155,9 +162,12 @@ public:
                 Sleep(this->watchStall);
             }
         }
-        long int end = (long int) time(NULL);
-        *file << "end " << to_string(end) << endl;
+
+        time_t end = time(NULL);
+        *file << "end|" << to_string((long int) end) << endl;
         file->close();
+
+        this->printEndGameTime(&end);
 
         string command = "start python src/save_game_data.py " + fileName;
         system(command.c_str());
