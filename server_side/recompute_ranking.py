@@ -1,7 +1,9 @@
+from os import environ
+
 from src.ranking import PlayerStats, GameRankingComputer
 from src.db import PostgresDB
 
-db_connection_str = 'dbname=worms user=lcgm host=localhost port=5432 password=123k321k'
+db_connection_str = environ['PG_CONNECTION_STR']
 
 if __name__ == '__main__':
     db = PostgresDB(db_connection_str)

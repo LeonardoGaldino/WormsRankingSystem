@@ -1,3 +1,4 @@
+from os import environ
 import json
 from functools import reduce
 
@@ -16,11 +17,11 @@ get_ranking_endpoint = 'get_ranking'
 get_games_endpoint = 'get_games'
 create_game_endpoint = 'create_game'
 
-db_connection_string = 'dbname=worms user=lcgm host=localhost port=5432 password=123k321k'
+db_connection_str = environ['PG_CONNECTION_STR']
 db_conns = {
-    get_ranking_endpoint: PostgresDB(db_connection_string),
-    get_games_endpoint: PostgresDB(db_connection_string),
-    create_game_endpoint: PostgresDB(db_connection_string),
+    get_ranking_endpoint: PostgresDB(db_connection_str),
+    get_games_endpoint: PostgresDB(db_connection_str),
+    create_game_endpoint: PostgresDB(db_connection_str),
 }
 
 
