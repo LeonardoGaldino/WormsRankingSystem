@@ -38,7 +38,7 @@ class RankingNumberTableCell extends React.Component {
         {this.props.idx === 0 && <StarIcon style={{ position: 'relative', top: 5, color: 'yellow' }}></StarIcon>}
         {this.props.idx === 1 && <StarIcon style={{ position: 'relative', top: 5, color: 'silver' }}></StarIcon>}
         {this.props.idx === 2 && <StarIcon style={{ position: 'relative', top: 5, color: 'brown' }}></StarIcon>}
-        {this.props.idx >= 3 && <>{this.props.idx}.</>}
+        {this.props.idx >= 3 && <>{this.props.idx + 1}.</>}
       </TableCell>;
   }
 }
