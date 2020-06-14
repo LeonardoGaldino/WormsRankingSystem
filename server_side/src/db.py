@@ -30,6 +30,18 @@ games_query = """
         ORDER BY (g.insertion_timestamp, pgr.score) DESC NULLS LAST
 """
 
+player_stats_query = """
+    SELECT
+        ps.player_id,
+        ps.game_id,
+        p.name,
+        ps.kills,
+        ps.damage,
+        ps.self_damage
+        FROM player_stats ps
+        INNER JOIN player p ON p.id = ps.player_id;
+"""
+
 player_query = """
     SELECT
         id, ranking
@@ -83,6 +95,8 @@ insert_player_game_ranking_stmt = """
     ) VALUES (%s, %s, %s, %s);
 """
 
+truncate_player_game_ranking_stmt = "TRUNCATE TABLE player_game_ranking;"
+
 class PostgresDB:
 
     def __init__(self, connection_string: str):
@@ -98,6 +112,12 @@ class PostgresDB:
         self.cursor.execute(global_game_avg_query, (game_id,))
         res = self.cursor.fetchone()
         return 0 if res is None else float(res[0])
+
+    def get_players_stats(self):
+        self.cursor.execute(player_stats_query)
+        res = self.cursor.fetchall()
+
+        return self.parse_players_stats_response(res)
 
     def get_game_avg_ranking(self, player_ids: [int]):
         id_list = '('
@@ -148,6 +168,10 @@ class PostgresDB:
     def insert_player_game_ranking(self, player_id: int, game_id: int, player_score: float, ranking_delta: float):
         self.cursor.execute(insert_player_game_ranking_stmt, (player_id, game_id, player_score, ranking_delta))
 
+    def truncate_player_game_ranking(self):
+        self.cursor.execute(truncate_player_game_ranking_stmt)
+        self.commit()
+
     def commit(self):
         self.conn.commit()
 
@@ -157,7 +181,24 @@ class PostgresDB:
     def safe_score(self, value: float):
         return 0 if value is None else value
 
-    def parse_games_response(self, raw_data: str):
+    def parse_players_stats_response(self, raw_data):
+        parsed_data = {}
+        for data in raw_data:
+            player_id, game_id, player_name, kills, damage, self_damage = data
+            game_id = int(game_id)
+
+            entries = parsed_data.get(game_id, [])
+            entries.append({
+                'player_id': int(player_id),
+                'name': player_name.strip(),
+                'kills': int(kills),
+                'damage': int(damage),
+                'self_damage': int(self_damage),
+            })
+            parsed_data[game_id] = entries
+        return parsed_data
+
+    def parse_games_response(self, raw_data):
         date_index = {}
         for data in raw_data:
             insertion_ts = data[1]
@@ -173,11 +214,10 @@ class PostgresDB:
                 'score': data[6],
                 'ranking_delta': data[7],
             })
-            #games_for_date[data[0]] = sorted(player_entries, key=lambda v: v['position'])
             games_for_date[data[0]] = player_entries
             date_index[parsed_date] = games_for_date
         return date_index
 
-    def parse_ranking_response(self, raw_data: str):
+    def parse_ranking_response(self, raw_data):
         return [{'name': data[0].strip(), 'ranking': data[1], 'games': data[2],
             'score_avg': self.safe_score(data[3])} for data in raw_data]

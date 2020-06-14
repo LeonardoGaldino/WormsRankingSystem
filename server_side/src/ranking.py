@@ -5,9 +5,9 @@ from .db import PostgresDB
 
 class PlayerStats:
 
-    def __init__(self, db: PostgresDB, name: str, kills: int, damage: int, self_damage: int):
+    def __init__(self, db: PostgresDB, name: str, kills: int, damage: int, self_damage: int, player_id: int = None):
         self.db = db
-        self.id = self.db.get_player_data(name)[0]
+        self.id = self.db.get_player_data(name)[0] if player_id is None else player_id
         self.name = name
         self.kills = kills
         self.damage = damage
@@ -31,7 +31,8 @@ class PlayerStats:
         return PlayerStats(db, name, json.get('kills', 0), json.get('damage', 0), json.get('self_damage', 0))
 
     def __repr__(self):
-        return 'PlayerStats({}, {}, {}, {})'.format(self.name, self.kills, self.damage, self.self_damage)
+        return 'PlayerStats({}, {}, {}, {}, {})'.format(
+            self.name, self.kills, self.damage, self.self_damage, self.id)
 
 class GameRankingComputer:
 
