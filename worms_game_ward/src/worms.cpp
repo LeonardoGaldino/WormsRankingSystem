@@ -38,7 +38,7 @@ public:
     }
 
     void save(ofstream* file) {
-        *file << this->teamName << " " << this->kills << " " << this->totalDamage << " " << this->selfDamage << endl;
+        *file << this->teamName << "|" << this->kills << "|" << this->totalDamage << "|" << this->selfDamage << endl;
     }
 
     // TODO: Check for errors.
@@ -156,7 +156,7 @@ public:
             }
         }
         long int end = (long int) time(NULL);
-        *file << "end " << to_string(end) << endl;
+        *file << "end|" << to_string(end) << endl;
         file->close();
 
         string command = "start python src/save_game_data.py " + fileName;
