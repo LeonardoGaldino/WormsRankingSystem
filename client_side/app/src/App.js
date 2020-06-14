@@ -82,10 +82,10 @@ class RankingTable extends React.Component {
                     <TableCell align="center" component="td" scope="row">{row.name}</TableCell>
                     <TableCell style={{color: row.ranking >= 100 ? 'green' : 'red'}} 
                       align="center" component="td" scope="row">
-                        {row.ranking.toFixed(2)}
+                        {row.ranking.toFixed(0)}
                     </TableCell>
                     <TableCell align="center" component="td" scope="row">
-                        {row.score_avg.toFixed(2)}
+                        {row.score_avg.toFixed(0)}
                     </TableCell>
                     <TableCell align="center" component="td" scope="row">{row.games}</TableCell>
                   </TableRow>
@@ -149,7 +149,7 @@ class Game extends React.Component {
               <TableCell align="center" component="td" scope="entry">{entry.name}</TableCell>
               <TableCell align="center" component="td" scope="entry">{entry.kills}</TableCell>
               <TableCell align="center" component="td" scope="entry">{entry.damage}</TableCell>
-              <TableCell align="center" component="td" scope="entry">{entry.self_damage }</TableCell>
+              <TableCell align="center" component="td" scope="entry">{entry.self_damage}</TableCell>
               <TableCell align="center" component="td" scope="entry">{entry.score}</TableCell>
               <TableCell align="center" component="td" scope="entry">
                 {parseFloat(entry.ranking_delta) !== 0.0 && (entry.ranking_delta > 0 ? 
@@ -159,7 +159,7 @@ class Game extends React.Component {
                 <ArrowDownwardIcon style={{marginRight: 3, position: 'relative', top: 6, color: 'red'}}>
                 </ArrowDownwardIcon>)}
                 {Math.abs(entry.ranking_delta) < 10.0 && '0'}
-                {Math.abs(entry.ranking_delta).toFixed(2)}
+                {Math.abs(entry.ranking_delta).toFixed(0)}
               </TableCell>
             </TableRow>
           ))}
