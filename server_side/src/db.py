@@ -220,4 +220,4 @@ class PostgresDB:
 
     def parse_ranking_response(self, raw_data):
         return [{'name': data[0].strip(), 'ranking': data[1], 'games': data[2],
-            'score_avg': self.safe_score(data[3])} for data in raw_data]
+            'score_avg': round(self.safe_score(data[3]))} for data in raw_data]
