@@ -80,7 +80,7 @@ class RankingTable extends React.Component {
                   <TableRow key={row.name}>
                     <RankingNumberTableCell name={row.name} idx={idx}></RankingNumberTableCell>
                     <TableCell align="center" component="td" scope="row">{row.name}</TableCell>
-                    <TableCell style={{color: row.ranking >= 100 ? 'green' : 'red'}} 
+                    <TableCell style={{color: row.ranking >= 1500 ? 'green' : 'red'}} 
                       align="center" component="td" scope="row">
                         {row.ranking.toFixed(0)}
                     </TableCell>
