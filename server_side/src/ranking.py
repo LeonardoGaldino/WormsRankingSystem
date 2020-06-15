@@ -80,7 +80,7 @@ class GameRankingComputer:
             ranking_weight = 1.0 if game_avg_ranking == 0 else player_ranking/game_avg_ranking
         #ranking_weight = constrain(ranking_weight, 0.33, 3)
 
-        delta_ranking = round(diff*(ranking_weight**2))
+        delta_ranking = round((diff/2.0)*(ranking_weight**2))
 
         # Prevent ranking from falling below 1
         if (player_ranking + delta_ranking) < 1:
