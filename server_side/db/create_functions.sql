@@ -78,7 +78,7 @@ CREATE OR REPLACE FUNCTION update_game_scores_generic(IN changed_row PLAYER_GAME
 CREATE OR REPLACE FUNCTION update_ranking_on_truncate() RETURNS TRIGGER AS 
     $$
         BEGIN
-            UPDATE player SET RANKING = 100;
+            UPDATE player SET RANKING = 1500;
             UPDATE game SET score = NULL,
                             avg_score_after = NULL;
             RETURN NULL;
