@@ -13,32 +13,22 @@ import psycopg2
 app = Flask(__name__)
 CORS(app)
 
-get_ranking_endpoint = 'get_ranking'
-get_games_endpoint = 'get_games'
-create_game_endpoint = 'create_game'
-
 db_connection_str = environ['PG_CONNECTION_STR']
-db_conns = {
-    get_ranking_endpoint: PostgresDB(db_connection_str),
-    get_games_endpoint: PostgresDB(db_connection_str),
-    create_game_endpoint: PostgresDB(db_connection_str),
-}
 
-
-@app.route('/worms/api/ranking', methods=['GET'], endpoint=get_ranking_endpoint)
+@app.route('/worms/api/ranking', methods=['GET'])
 def ranking():
-    db = db_conns[request.endpoint]
+    db = PostgresDB(db_connection_str)
     return json.dumps(db.get_ranking(), ensure_ascii=False)
 
 
-@app.route('/worms/api/games', methods=['GET'], endpoint=get_games_endpoint)
+@app.route('/worms/api/games', methods=['GET'])
 def games():
-    db = db_conns[request.endpoint]
+    db = PostgresDB(db_connection_str)
     return json.dumps(db.get_games(), ensure_ascii=False)
 
-@app.route('/worms/api/create/game', methods=['POST'], endpoint=create_game_endpoint)
+@app.route('/worms/api/create/game', methods=['POST'])
 def create_game():
-    db = db_conns[request.endpoint]
+    db = PostgresDB(db_connection_str)
     game_id = None
 
     try:
