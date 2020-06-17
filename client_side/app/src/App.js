@@ -133,7 +133,7 @@ class Games extends React.Component {
       <div>
         <InputLabel id="demo-simple-select-label">Games per page</InputLabel>
         <Select
-          style={{width: 65}}
+          style={{width: 45}}
           labelId="demo-simple-select-label"
           id="demo-simple-select"
           value={this.state.pageSize}
