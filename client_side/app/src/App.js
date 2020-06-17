@@ -145,22 +145,22 @@ class Game extends React.Component {
           </TableRow>
           <TableRow>
             <TableCell align="left"><strong>Name</strong></TableCell>
-            <TableCell align="right"><strong>Kills</strong></TableCell>
-            <TableCell align="right"><strong>Damage</strong></TableCell>
-            <TableCell align="right"><strong>Self damage</strong></TableCell>
-            <TableCell align="right"><strong>Score</strong></TableCell>
-            <TableCell align="right"><strong>&Delta;Ranking</strong></TableCell>
+            <TableCell align="center"><strong>Kills</strong></TableCell>
+            <TableCell align="center"><strong>Damage</strong></TableCell>
+            <TableCell align="center"><strong>Self damage</strong></TableCell>
+            <TableCell align="center"><strong>Score</strong></TableCell>
+            <TableCell align="center"><strong>&Delta;Ranking</strong></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {this.props.playerEntries.map((entry, idx) => (
             <TableRow key={entry.name}>
               <TableCell align="left" component="td" scope="entry">{entry.name}</TableCell>
-              <TableCell align="right" component="td" scope="entry">{entry.kills}</TableCell>
-              <TableCell align="right" component="td" scope="entry">{entry.damage}</TableCell>
-              <TableCell align="right" component="td" scope="entry">{entry.self_damage}</TableCell>
-              <TableCell align="right" component="td" scope="entry">{entry.score}</TableCell>
-              <TableCell align="right" component="td" scope="entry">
+              <TableCell align="center" component="td" scope="entry">{entry.kills}</TableCell>
+              <TableCell align="center" component="td" scope="entry">{entry.damage}</TableCell>
+              <TableCell align="center" component="td" scope="entry">{entry.self_damage}</TableCell>
+              <TableCell align="center" component="td" scope="entry">{entry.score}</TableCell>
+              <TableCell align="center" component="td" scope="entry">
                 {parseFloat(entry.ranking_delta) !== 0.0 && (entry.ranking_delta > 0 ? 
                 <ArrowUpwardIcon style={{marginRight: 3, position: 'relative', top: 6, color: 'green'}}>
                 </ArrowUpwardIcon> 
