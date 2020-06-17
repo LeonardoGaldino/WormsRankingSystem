@@ -28,6 +28,7 @@ def games():
 
     page_size, page = int(request.args.get('page_size', 5)), int(request.args.get('page', 0))
     num_pages = ceil(db.get_num_games()/page_size)
+    
     games_res = db.get_games(page_size, page)
 
     return json.dumps({'num_pages': num_pages, 'games': games_res}, ensure_ascii=False)

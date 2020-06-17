@@ -213,13 +213,13 @@ class PostgresDB:
         return parsed_data
 
     def parse_games_response(self, raw_data):
-        date_index = {}
+        game_by_ts = {}
         for data in raw_data:
-            insertion_ts = data[1]
-            parsed_date = '{}/{}/{}'.format(insertion_ts.day, insertion_ts.month, insertion_ts.year)
-            games_for_date = date_index.get(parsed_date, {})
-            # get game for given id
-            player_entries = games_for_date.get(data[0], []) 
+            insertion_dt = data[1]
+            ts = insertion_dt.timestamp()
+
+            player_entries = game_by_ts.get(ts, [])
+
             player_entries.append({
                 'name': data[2].strip(),
                 'kills': data[3],
@@ -228,9 +228,9 @@ class PostgresDB:
                 'score': data[6],
                 'ranking_delta': data[7],
             })
-            games_for_date[data[0]] = player_entries
-            date_index[parsed_date] = games_for_date
-        return date_index
+            
+            game_by_ts[ts] = player_entries
+        return game_by_ts
 
     def parse_ranking_response(self, raw_data):
         return [{'name': data[0].strip(), 'ranking': data[1], 'games': data[2],

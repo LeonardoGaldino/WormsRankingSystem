@@ -19,6 +19,8 @@ import IconButton from '@material-ui/core/IconButton';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 
+import dayjs from 'dayjs';
+
 // TODO: use dotenv and webpack to correctly set environment parameters
 const API_URL = 'http://localhost';
 const API_PORT = 5000;
@@ -192,14 +194,11 @@ class Games extends React.Component {
 
       <div>
         {
-          Object.keys(this.state.games).map(gameDate => {
-          return <div style={{width: '95%', margin: 'auto'}} key={gameDate+'div'}>
-            {Object.keys(this.state.games[gameDate]).reverse().map((gameId,idx) => 
-              <Game key={gameId} background={this.state.resultsBackground} 
-              gameIdx={Object.keys(this.state.games[gameDate]).length - idx}
-              gameDate={gameDate} playerEntries={this.state.games[gameDate][gameId]}>
+          Object.keys(this.state.games).map(gameTs => {
+          return <div style={{width: '95%', margin: 'auto'}} key={gameTs+'div'}>
+              <Game key={gameTs} background={this.state.resultsBackground} 
+              gameTs={gameTs} playerEntries={this.state.games[gameTs]}>
               </Game>
-            )}
           </div>
         })}
       </div>
@@ -209,14 +208,27 @@ class Games extends React.Component {
 
 class Game extends React.Component {
 
+  getLocalDate() {
+    let utcDate = new Date(this.props.gameTs*1000);
+    let date = new Date();
+    date.setUTCMinutes(utcDate.getMinutes());
+    date.setUTCHours(utcDate.getHours());
+    date.setUTCDate(utcDate.getDate());
+    date.setUTCMonth(utcDate.getUTCMonth());
+    date.setUTCFullYear(utcDate.getUTCFullYear());
+
+    return date;
+  }
+
   render() {
+    let curDate = dayjs(this.getLocalDate())
     return <MuiTableContainer style={{backgroundColor: this.props.background, marginTop: 20}} component={Paper}>
       <Table size='medium' aria-label="simple table">
         <TableHead>
           <TableRow>
             <TableCell className="game-table-header" align="left">
               <h2>
-                {`Game ${this.props.gameIdx} - ${this.props.gameDate}`}
+                {curDate.format('DD/MM/YYYY - HH:mm')}
               </h2>
             </TableCell>
           </TableRow>
