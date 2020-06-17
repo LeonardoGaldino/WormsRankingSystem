@@ -63,7 +63,7 @@ class RankingTable extends React.Component {
   }
 
   render() {
-    return <MuiTableContainer component={Paper}>
+    return <Paper style={{marginTop: 30}} elevation={4}>
             <Table size='medium' aria-label="simple table">
               <TableHead>
                 <TableRow>
@@ -91,7 +91,7 @@ class RankingTable extends React.Component {
                 ))}
               </TableBody>
             </Table>
-          </MuiTableContainer>
+      </Paper>
   }
 }
 
@@ -117,7 +117,7 @@ class Games extends React.Component {
   }
 
   render() {
-    return <Paper style={{paddingBottom: 20, backgroundColor: '#f5f5f5'}} elevation={3}>
+    return <Paper style={{marginTop: 30, paddingBottom: 20, backgroundColor: '#f5f5f5'}} elevation={3}>
       <h1 style={{paddingTop: 15, display: 'block'}}>Games</h1>
       {Object.keys(this.state.games).map(gameDate => {
         return <div style={{width: '95%', margin: 'auto'}} key={gameDate+'div'}>
