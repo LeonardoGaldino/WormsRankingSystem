@@ -152,6 +152,7 @@ class Games extends React.Component {
           <MenuItem value={20}>20</MenuItem>
         </Select>
       </div>
+
       <div>
         <IconButton
             onClick={() => {
@@ -165,6 +166,10 @@ class Games extends React.Component {
             <KeyboardArrowLeft />
         </IconButton>
 
+        <span style={{color: "rgba(0,0,0,0.54)", fontWeight: 400, fontSize: 16}}>
+          {`${this.state.currentPage+1}/${this.state.numPages}`}
+        </span>
+
         <IconButton
           onClick={() => {
             this.setState((state, props) => ({
@@ -177,24 +182,19 @@ class Games extends React.Component {
           <KeyboardArrowRight />
         </IconButton>
       </div>
-      <div>
 
       <div>
-        <span style={{color: "rgba(0,0,0,0.54)", fontWeight: 400, fontSize: 16}}>
-          {`${this.state.currentPage+1}/${this.state.numPages}`}
-        </span>
+        {
+          Object.keys(this.state.games).map(gameDate => {
+          return <div style={{width: '95%', margin: 'auto'}} key={gameDate+'div'}>
+            {Object.keys(this.state.games[gameDate]).reverse().map((gameId,idx) => 
+              <Game key={gameId} gameIdx={Object.keys(this.state.games[gameDate]).length - idx}
+              gameDate={gameDate} playerEntries={this.state.games[gameDate][gameId]}>
+              </Game>
+            )}
+          </div>
+        })}
       </div>
-
-      </div>
-      {Object.keys(this.state.games).map(gameDate => {
-        return <div style={{width: '95%', margin: 'auto'}} key={gameDate+'div'}>
-          {Object.keys(this.state.games[gameDate]).reverse().map((gameId,idx) => 
-            <Game key={gameId} gameIdx={Object.keys(this.state.games[gameDate]).length - idx}
-             gameDate={gameDate} playerEntries={this.state.games[gameDate][gameId]}>
-             </Game>
-          )}
-        </div>
-      })}
     </Paper>
   }
 }
