@@ -1,6 +1,7 @@
 from os import environ
 import json
 from functools import reduce
+from math import ceil
 
 from .db import PostgresDB
 from .ranking import GameRankingComputer, PlayerStats
@@ -25,9 +26,11 @@ def ranking():
 def games():
     db = PostgresDB(db_connection_str)
 
-    page_size, page = int(request.args.get('page_size')), int(request.args.get('page'))
+    page_size, page = int(request.args.get('page_size', 5)), int(request.args.get('page', 0))
+    num_pages = ceil(db.get_num_games()/page_size)
+    games_res = db.get_games(page_size, page)
 
-    return json.dumps(db.get_games(page_size, page), ensure_ascii=False)
+    return json.dumps({'num_pages': num_pages, 'games': games_res}, ensure_ascii=False)
 
 @app.route('/worms/api/create/game', methods=['POST'])
 def create_game():

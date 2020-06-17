@@ -33,6 +33,8 @@ games_query = """
         ORDER BY (g.insertion_timestamp, pgr.score) DESC NULLS LAST
 """
 
+num_games_query = "SELECT COUNT(*) FROM game WHERE score IS NOT NULL AND avg_score_after IS NOT NULL;"
+
 player_stats_query = """
     SELECT
         ps.player_id,
@@ -161,6 +163,12 @@ class PostgresDB:
         res = self.cursor.fetchall()
 
         return self.parse_games_response(res)
+
+    def get_num_games(self):
+        self.cursor.execute(num_games_query)
+        res = self.cursor.fetchone()
+
+        return int(res[0])
 
     def get_player_data(self, player_name: str):
         self.cursor.execute(player_query, (player_name,))

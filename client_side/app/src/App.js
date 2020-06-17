@@ -61,11 +61,11 @@ class RankingTable extends React.Component {
   }
 
   async fetchData() {
-    let v = await fetch(`${API_ENDPOINT+this.requestPath}`, {
+    let res = await fetch(`${API_ENDPOINT+this.requestPath}`, {
       method: 'GET',
     });
     this.setState({
-      rows: await v.json(),
+      rows: await res.json(),
     });
   }
 
@@ -108,6 +108,7 @@ class Games extends React.Component {
   state = {
     games: [],
     currentPage: 0,
+    numPages: 0,
     pageSize: 5,
   };
 
@@ -120,9 +121,9 @@ class Games extends React.Component {
       method: 'GET',
     });
     let data = await res.json();
-    console.log(data)
     this.setState({
-      games: data,
+      games: data.games,
+      numPages: data.num_pages,
     });
   }
 
@@ -151,30 +152,38 @@ class Games extends React.Component {
           <MenuItem value={20}>20</MenuItem>
         </Select>
       </div>
+      <div>
         <IconButton
-          onClick={() => {
-            this.setState((state, props) => ({
-              ...state,
-              currentPage: Math.max(0, state.currentPage - 1)
-            }), this.fetchData)
-          }}
-          aria-label="previous page"
-        >
-          <KeyboardArrowLeft />
+            onClick={() => {
+              this.setState((state, props) => ({
+                ...state,
+                currentPage: Math.max(0, state.currentPage - 1)
+              }), this.fetchData)
+            }}
+            aria-label="previous page"
+          >
+            <KeyboardArrowLeft />
         </IconButton>
 
         <IconButton
           onClick={() => {
             this.setState((state, props) => ({
               ...state,
-              currentPage: state.currentPage + 1
+              currentPage: Math.min(state.currentPage + 1, state.numPages - 1)
             }), this.fetchData)
           }}
           aria-label="next page"
         >
           <KeyboardArrowRight />
         </IconButton>
+      </div>
       <div>
+
+      <div>
+        <span style={{color: "rgba(0,0,0,0.54)", fontWeight: 400, fontSize: 16}}>
+          {`${this.state.currentPage+1}/${this.state.numPages}`}
+        </span>
+      </div>
 
       </div>
       {Object.keys(this.state.games).map(gameDate => {
