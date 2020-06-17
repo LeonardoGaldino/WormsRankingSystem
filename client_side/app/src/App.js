@@ -117,23 +117,23 @@ class Games extends React.Component {
   }
 
   render() {
-    return <div>
-      <h1 style={{display: 'block'}}>Games</h1>
+    return <Paper style={{paddingBottom: 20, backgroundColor: '#f5f5f5'}} elevation={3}>
+      <h1 style={{paddingTop: 15, display: 'block'}}>Games</h1>
       {Object.keys(this.state.games).map(gameDate => {
-        return <div key={gameDate+'div'}>
+        return <div style={{width: '95%', margin: 'auto'}} key={gameDate+'div'}>
           {Object.keys(this.state.games[gameDate]).reverse().map((gameId,idx) => 
             <Game key={gameId} gameIdx={Object.keys(this.state.games[gameDate]).length - idx} gameDate={gameDate} playerEntries={this.state.games[gameDate][gameId]}></Game>
           )}
         </div>
       })}
-    </div>
+    </Paper>
   }
 }
 
 class Game extends React.Component {
 
   render() {
-    return <MuiTableContainer style={{marginTop: 10}} component={Paper}>
+    return <MuiTableContainer style={{marginTop: 20}} component={Paper}>
       <Table size='medium' aria-label="simple table">
         <TableHead>
           <TableRow>
