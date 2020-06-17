@@ -26,7 +26,8 @@ games_query = """
         FROM player_stats ps
         INNER JOIN game g ON g.id = ps.game_id 
             AND g.id IN 
-                (SELECT g2.id FROM game g2 ORDER BY g2.insertion_timestamp DESC LIMIT %s OFFSET %s)
+                (SELECT g2.id FROM game g2 WHERE score IS NOT NULL
+                    AND avg_score_after IS NOT NULL ORDER BY g2.insertion_timestamp DESC LIMIT %s OFFSET %s)
         INNER JOIN player p ON p.id = ps.player_id 
         INNER JOIN player_game_ranking pgr ON pgr.player_id = p.id AND pgr.game_id = g.id 
         ORDER BY (g.insertion_timestamp, pgr.score) DESC NULLS LAST
