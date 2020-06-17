@@ -24,7 +24,10 @@ def ranking():
 @app.route('/worms/api/games', methods=['GET'])
 def games():
     db = PostgresDB(db_connection_str)
-    return json.dumps(db.get_games(), ensure_ascii=False)
+
+    page_size, page = int(request.args.get('page_size')), int(request.args.get('page'))
+
+    return json.dumps(db.get_games(page_size, page), ensure_ascii=False)
 
 @app.route('/worms/api/create/game', methods=['POST'])
 def create_game():

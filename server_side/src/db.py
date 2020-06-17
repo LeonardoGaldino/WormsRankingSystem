@@ -24,7 +24,9 @@ games_query = """
         pgr.score,
         pgr.ranking_delta
         FROM player_stats ps
-        INNER JOIN game g ON g.id = ps.game_id
+        INNER JOIN game g ON g.id = ps.game_id 
+            AND g.id IN 
+                (SELECT g2.id FROM game g2 ORDER BY g2.insertion_timestamp DESC LIMIT %s OFFSET %s)
         INNER JOIN player p ON p.id = ps.player_id 
         INNER JOIN player_game_ranking pgr ON pgr.player_id = p.id AND pgr.game_id = g.id 
         ORDER BY (g.insertion_timestamp, pgr.score) DESC NULLS LAST
@@ -150,8 +152,11 @@ class PostgresDB:
 
         return self.parse_ranking_response(res)
 
-    def get_games(self):
-        self.cursor.execute(games_query)
+    def get_games(self, page_size: int = None, page: int = None):
+        page_size = page_size if page_size is not None else 5
+        offset = page*page_size if page is not None else 0
+
+        self.cursor.execute(games_query, (page_size, offset,))
         res = self.cursor.fetchall()
 
         return self.parse_games_response(res)
