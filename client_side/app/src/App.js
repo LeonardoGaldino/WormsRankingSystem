@@ -208,20 +208,8 @@ class Games extends React.Component {
 
 class Game extends React.Component {
 
-  getLocalDate() {
-    let utcDate = new Date(this.props.gameTs*1000);
-    let date = new Date();
-    date.setUTCMinutes(utcDate.getMinutes());
-    date.setUTCHours(utcDate.getHours());
-    date.setUTCDate(utcDate.getDate());
-    date.setUTCMonth(utcDate.getUTCMonth());
-    date.setUTCFullYear(utcDate.getUTCFullYear());
-
-    return date;
-  }
-
   render() {
-    let curDate = dayjs(this.getLocalDate())
+    let curDate = dayjs.unix(this.props.gameTs);
     return <MuiTableContainer style={{backgroundColor: this.props.background, marginTop: 20}} component={Paper}>
       <Table size='medium' aria-label="simple table">
         <TableHead>
