@@ -110,6 +110,7 @@ class Games extends React.Component {
     currentPage: 0,
     numPages: 0,
     pageSize: 5,
+    resultsBackground: '#f5f5f5', 
   };
 
   componentDidMount() {
@@ -117,14 +118,20 @@ class Games extends React.Component {
   }
 
   async fetchData() {
+    this.setState((state, props) => ({
+      ...state,
+      resultsBackground: '#f5f5f5'
+    }));
     let res = await fetch(`${API_ENDPOINT+this.requestPath}?page=${this.state.currentPage}&page_size=${this.state.pageSize}`, {
       method: 'GET',
     });
     let data = await res.json();
-    this.setState({
+    this.setState((state, props) => ({
+      ...state,
       games: data.games,
       numPages: data.num_pages,
-    });
+      resultsBackground: 'white'
+    }));
   }
 
   render() {
@@ -188,7 +195,8 @@ class Games extends React.Component {
           Object.keys(this.state.games).map(gameDate => {
           return <div style={{width: '95%', margin: 'auto'}} key={gameDate+'div'}>
             {Object.keys(this.state.games[gameDate]).reverse().map((gameId,idx) => 
-              <Game key={gameId} gameIdx={Object.keys(this.state.games[gameDate]).length - idx}
+              <Game key={gameId} background={this.state.resultsBackground} 
+              gameIdx={Object.keys(this.state.games[gameDate]).length - idx}
               gameDate={gameDate} playerEntries={this.state.games[gameDate][gameId]}>
               </Game>
             )}
@@ -202,7 +210,7 @@ class Games extends React.Component {
 class Game extends React.Component {
 
   render() {
-    return <MuiTableContainer style={{marginTop: 20}} component={Paper}>
+    return <MuiTableContainer style={{backgroundColor: this.props.background, marginTop: 20}} component={Paper}>
       <Table size='medium' aria-label="simple table">
         <TableHead>
           <TableRow>
