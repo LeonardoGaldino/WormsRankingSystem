@@ -7,7 +7,7 @@ from googleapiclient.http import MediaFileUpload
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = './wormsrankingsystem-034d01ddd906.json'
-parents_ids = ['12Of6hhBhnOA6KrlWorg0M2uaBOJrYgpx', '1Q9jfdzJfT9SVz7luRurjpevzQrZlG0YB']
+parents_ids = ['1Q9jfdzJfT9SVz7luRurjpevzQrZlG0YB']
 
 def upload_backup():
     credentials = service_account.Credentials.from_service_account_file(
