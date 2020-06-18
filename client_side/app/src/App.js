@@ -106,7 +106,8 @@ class RankingTable extends React.Component {
 
 class Games extends React.Component {
 
-  requestPath = '/worms/api/games'
+  requestPath = '/worms/api/games';
+  timeoutId = null;
   state = {
     games: [],
     currentPage: 0,
@@ -116,14 +117,25 @@ class Games extends React.Component {
   };
 
   componentDidMount() {
-    this.fetchData();
+    this.fetchData(false);
   }
 
-  async fetchData() {
-    this.setState((state, props) => ({
-      ...state,
-      resultsBackground: '#f5f5f5'
-    }));
+  async fetchData(resetBackground) {
+    if(this.state.currentPage === 0) {
+      this.timeoutId = setTimeout(() => { this.fetchData(false)}, 5000);
+    } else {
+      if(this.timeoutId !== null) {
+        clearTimeout(this.timeoutId);
+        this.timeoutId = null;
+      }
+    }
+    if(resetBackground) {
+      this.setState((state, props) => ({
+        ...state,
+        resultsBackground: '#f5f5f5'
+      }));
+    }
+
     let res = await fetch(`${API_ENDPOINT+this.requestPath}?page=${this.state.currentPage}&page_size=${this.state.pageSize}`, {
       method: 'GET',
     });
@@ -152,7 +164,7 @@ class Games extends React.Component {
                 ...this.state,
                 pageSize: parseInt(event.target.value),
                 currentPage: 0,
-              }, this.fetchData);
+              }, () => this.fetchData(true));
             }
           }
         >
@@ -168,7 +180,7 @@ class Games extends React.Component {
               this.setState((state, props) => ({
                 ...state,
                 currentPage: Math.max(0, state.currentPage - 1)
-              }), this.fetchData)
+              }), () => this.fetchData(true))
             }}
             aria-label="previous page"
           >
@@ -184,7 +196,7 @@ class Games extends React.Component {
             this.setState((state, props) => ({
               ...state,
               currentPage: Math.min(state.currentPage + 1, state.numPages - 1)
-            }), this.fetchData)
+            }), () => this.fetchData(true))
           }}
           aria-label="next page"
         >
