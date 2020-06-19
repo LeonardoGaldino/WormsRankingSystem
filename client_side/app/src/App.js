@@ -66,6 +66,7 @@ class RankingTable extends React.Component {
     let res = await fetch(`${API_ENDPOINT+this.requestPath}`, {
       method: 'GET',
     });
+
     this.setState({
       rows: await res.json(),
     });
@@ -107,7 +108,6 @@ class RankingTable extends React.Component {
 class Games extends React.Component {
 
   requestPath = '/worms/api/games';
-  timeoutId = null;
   state = {
     games: [],
     currentPage: 0,
@@ -117,29 +117,25 @@ class Games extends React.Component {
   };
 
   componentDidMount() {
-    this.fetchData(false);
+    this.fetchData();
   }
 
-  async fetchData(resetBackground) {
-    if(this.state.currentPage === 0) {
-      this.timeoutId = setTimeout(() => { this.fetchData(false)}, 5000);
-    } else {
-      if(this.timeoutId !== null) {
-        clearTimeout(this.timeoutId);
-        this.timeoutId = null;
-      }
-    }
-    if(resetBackground) {
-      this.setState((state, props) => ({
-        ...state,
-        resultsBackground: '#f5f5f5'
-      }));
-    }
+  async fetchData() {
+    this.setState((state, props) => ({
+      ...state,
+      resultsBackground: '#f5f5f5'
+    }));
 
-    let res = await fetch(`${API_ENDPOINT+this.requestPath}?page=${this.state.currentPage}&page_size=${this.state.pageSize}`, {
+    let endPointUrl = new URL(API_ENDPOINT+this.requestPath);
+    endPointUrl.searchParams.append('page', this.state.currentPage);
+    endPointUrl.searchParams.append('page_size', this.state.pageSize);
+
+    let res = await fetch(endPointUrl, {
       method: 'GET',
     });
+
     let data = await res.json();
+
     this.setState((state, props) => ({
       ...state,
       games: data.games,
@@ -164,7 +160,7 @@ class Games extends React.Component {
                 ...this.state,
                 pageSize: parseInt(event.target.value),
                 currentPage: 0,
-              }, () => this.fetchData(true));
+              }, this.fetchData);
             }
           }
         >
@@ -180,7 +176,7 @@ class Games extends React.Component {
               this.setState((state, props) => ({
                 ...state,
                 currentPage: Math.max(0, state.currentPage - 1)
-              }), () => this.fetchData(true))
+              }), this.fetchData)
             }}
             aria-label="previous page"
           >
@@ -196,7 +192,7 @@ class Games extends React.Component {
             this.setState((state, props) => ({
               ...state,
               currentPage: Math.min(state.currentPage + 1, state.numPages - 1)
-            }), () => this.fetchData(true))
+            }), this.fetchData)
           }}
           aria-label="next page"
         >
@@ -207,11 +203,11 @@ class Games extends React.Component {
       <div>
         {
           Object.keys(this.state.games).map(gameTs => {
-          return <div style={{width: '95%', margin: 'auto'}} key={gameTs+'div'}>
-              <Game key={gameTs} background={this.state.resultsBackground} 
-              gameTs={gameTs} playerEntries={this.state.games[gameTs]}>
-              </Game>
-          </div>
+            return <div style={{width: '95%', margin: 'auto'}} key={gameTs+'div'}>
+                <Game key={gameTs} background={this.state.resultsBackground} 
+                gameTs={gameTs} playerEntries={this.state.games[gameTs]}>
+                </Game>
+            </div>
         })}
       </div>
     </Paper>
