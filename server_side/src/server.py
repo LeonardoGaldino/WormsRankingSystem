@@ -16,6 +16,13 @@ CORS(app)
 
 db_connection_str = environ['PG_CONNECTION_STR']
 
+@app.route('/worms/api/player/ranking_history', methods=['GET'])
+def player_ranking_history():
+    db = PostgresDB(db_connection_str)
+    player_name = request.args['player_name']
+    return json.dumps(db.get_player_ranking_history(player_name),ensure_ascii=False)
+    
+
 @app.route('/worms/api/ranking', methods=['GET'])
 def ranking():
     db = PostgresDB(db_connection_str)
@@ -25,7 +32,6 @@ def ranking():
 @app.route('/worms/api/games', methods=['GET'])
 def games():
     db = PostgresDB(db_connection_str)
-
     page_size, page = int(request.args.get('page_size', 5)), int(request.args.get('page', 0))
     num_pages = ceil(db.get_num_games()/page_size)
     
