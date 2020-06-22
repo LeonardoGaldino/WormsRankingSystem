@@ -54,6 +54,15 @@ player_query = """
         WHERE LOWER(name) = LOWER(%s);
 """
 
+player_ranking_history_query = """
+    SELECT
+        pgr.ranking_delta,
+        g.insertion_timestamp
+        FROM player_game_ranking pgr, game g 
+        WHERE pgr.player_id = %s AND g.id = pgr.game_id
+        ORDER BY g.insertion_timestamp ASC;
+"""
+
 player_avg_score_query = """
     SELECT
         AVG(score)
@@ -149,6 +158,14 @@ class PostgresDB:
         self.conn.commit()
         return game_id
 
+    def get_player_ranking_history(self, player_name: str):
+        player_id, player_ranking = self.get_player_data(player_name)
+        self.cursor.execute(player_ranking_history_query, (player_id,))
+        db_response = self.cursor.fetchall()
+        ranking_history_list = list(map(lambda row: {'delta_ranking': row[0] , 'game_ts': int(row[1].timestamp())}, db_response))
+        return_object = {'current_ranking' : player_ranking , 'history' : ranking_history_list}
+        return return_object
+
     def get_ranking(self):
         self.cursor.execute(ranking_query)
         res = self.cursor.fetchall()
@@ -173,7 +190,6 @@ class PostgresDB:
     def get_player_data(self, player_name: str):
         self.cursor.execute(player_query, (player_name,))
         res = self.cursor.fetchone()
-
         return res[0], res[1]
 
     def insert_player_stats(self, player_id: int, game_id, kills: int, damage: int, self_damage: int):
