@@ -1,7 +1,7 @@
 from functools import reduce
 import json
 
-from .db import PostgresDB
+from src.db import PostgresDB
 
 class PlayerStats:
 

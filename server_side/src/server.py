@@ -3,8 +3,8 @@ import json
 from functools import reduce
 from math import ceil
 
-from .db import PostgresDB
-from .ranking import GameRankingComputer, PlayerStats
+from src.db import PostgresDB
+from src.ranking import GameRankingComputer, PlayerStats
 
 from flask import Flask, request, Response
 from flask_cors import CORS
