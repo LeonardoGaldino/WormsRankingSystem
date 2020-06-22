@@ -163,7 +163,7 @@ class PostgresDB:
         self.cursor.execute(player_ranking_history_query, (player_id,))
         db_response = self.cursor.fetchall()
         ranking_history_list = list(map(lambda row: {'delta_ranking': row[0] , 'game_ts': int(row[1].timestamp())}, db_response))
-        return_object = {'current_ranking' : player_ranking , 'history' : ranking_history_list}
+        return_object = {'current_ranking': player_ranking , 'history': ranking_history_list}
         return return_object
 
     def get_ranking(self):
