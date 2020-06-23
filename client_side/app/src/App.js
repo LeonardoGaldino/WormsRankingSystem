@@ -29,7 +29,7 @@ const API_ENDPOINT = `${API_URL}:${API_PORT}`;
 function App() {
   return (
     <div className="App">
-      <Container>
+      <Container maxWidth={'md'}>
         <h1 style={{display: 'inline-block'}}>Worms Ranking System</h1>
         <img style={{height: 100, position: 'relative', top: 20, marginLeft: 5}} src="./worms.png"></img>
         <RankingTable></RankingTable>
