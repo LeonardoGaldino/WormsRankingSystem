@@ -1,11 +1,12 @@
 from os import environ
 from sys import argv, stderr, exit
 
-from src.commands import Command, RecomputeRankingCommand
+from src.commands import Command, RecomputeRankingCommand, RemovePlayerFromGameCommand
 
 
 VALID_COMMANDS: [Command] = [
     RecomputeRankingCommand,
+    RemovePlayerFromGameCommand,
 ]
 
 def main():
@@ -22,7 +23,6 @@ def main():
         exit(1)
 
     command = command_type(argv[2:])
-    print('Running {}...'.format(command.command_name()))
     command.run()
 
 if __name__ == '__main__':

@@ -109,6 +109,9 @@ insert_player_game_ranking_stmt = """
     ) VALUES (%s, %s, %s, %s);
 """
 
+delete_player_game_ranking_stmt = "DELETE FROM player_game_ranking WHERE player_id = %s AND game_id = %s"
+delete_player_stats_stmt = "DELETE FROM player_stats WHERE player_id = %s AND game_id = %s"
+
 truncate_player_game_ranking_stmt = "TRUNCATE TABLE player_game_ranking;"
 
 class PostgresDB:
@@ -200,6 +203,11 @@ class PostgresDB:
 
     def truncate_player_game_ranking(self):
         self.cursor.execute(truncate_player_game_ranking_stmt)
+        self.commit()
+
+    def delete_player_from_game(self, player_id: int, game_id: int):
+        self.cursor.execute(delete_player_game_ranking_stmt, (player_id, game_id))
+        self.cursor.execute(delete_player_stats_stmt, (player_id, game_id))
         self.commit()
 
     def commit(self):

@@ -70,8 +70,8 @@ class RecomputeRankingCommand(Command):
         ]
 
     def run(self):
-        parsed_args = self.validate_arguments()
-        db_connection_str = parsed_args[0]
+        [db_connection_str] = self.validate_arguments()
+        print('Running {}...'.format(self.command_name()))
 
         db = PostgresDB(db_connection_str)
         db.truncate_player_game_ranking()
@@ -92,3 +92,28 @@ class RecomputeRankingCommand(Command):
             for player_stats, score, ranking_delta in updates:
                 db.insert_player_game_ranking(player_stats.id, game_id, score, ranking_delta)
         db.commit()
+
+
+class RemovePlayerFromGameCommand(Command):
+
+    @staticmethod
+    def command_name() -> str:
+        return 'remove_player_from_game'
+
+    @staticmethod
+    def arguments() -> [Argument]:
+        return [
+            Argument('DB_CONNECTION_STR', str),
+            Argument('PLAYER_ID', int),
+            Argument('GAME_ID', int),
+        ]
+
+    def run(self):
+        [db_connection_str, player_id, game_id] = self.validate_arguments()
+        print('Running {}...'.format(self.command_name()))
+
+        db = PostgresDB(db_connection_str)
+        db.delete_player_from_game(player_id, game_id)
+
+        recompute_ranking_command = RecomputeRankingCommand([db_connection_str])
+        recompute_ranking_command.run()
