@@ -1,4 +1,11 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
+from os import system
+
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 from src.ranking import PlayerStats, GameRankingComputer
 from src.db import PostgresDB
@@ -117,3 +124,49 @@ class RemovePlayerFromGameCommand(Command):
 
         recompute_ranking_command = RecomputeRankingCommand([db_connection_str])
         recompute_ranking_command.run()
+
+
+class BackupDBCommand(Command):
+
+    @staticmethod
+    def command_name() -> str:
+        return 'backup_db'
+
+    @staticmethod
+    def arguments() -> [Argument]:
+        return [
+            Argument('DB_HOST', str),
+            Argument('DB_PORT', int),
+            Argument('DB_NAME', str),
+            Argument('DB_USER', str),
+            Argument('GOOGLE_CREDS_JSON_PATH', str),
+        ]
+
+    def run(self):
+        [db_host, db_port, db_name, db_user, google_creds_json_path] = self.validate_arguments()
+        print('Running {}...'.format(self.command_name()))
+
+        error_code = system('pg_dump {} > db/db_dump -h {} -p {} -U {} 2> db/db_dump.err'
+            .format(db_name, db_host, db_port, db_user))
+
+        if error_code != 0:
+            raise SystemExit('Error code {} when generating db_dump.'.format(error_code))
+
+        SCOPES = ['https://www.googleapis.com/auth/drive']
+        parents_ids = ['1Q9jfdzJfT9SVz7luRurjpevzQrZlG0YB']
+
+        credentials = service_account.Credentials.from_service_account_file(google_creds_json_path, scopes=SCOPES)
+
+        if not credentials.valid:
+            credentials.refresh(Request())
+
+        service = build('drive', 'v3', credentials=credentials)
+
+        today = datetime.now()
+        file_name = 'db_backup-{}/{}/{}'.format(today.day, today.month, today.year)
+        file_metadata = {'name': file_name, 'parents': parents_ids}
+        media = MediaFileUpload('db/db_dump', mimetype='text/plain')
+        file = service.files().create(body=file_metadata,
+                                            media_body=media,
+                                            fields='id').execute()
+        
