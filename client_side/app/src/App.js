@@ -4,6 +4,7 @@ import Container from '@material-ui/core/Container';
 import './App.css';
 import RankingTable from './components/RankingTable.js';
 import Games from './components/Games.js';
+import HelpSection from './components/HelpSection.js';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <img style={{height: 100, position: 'relative', top: 20, marginLeft: 5}} src="./worms.png"></img>
         <RankingTable></RankingTable>
         <Games></Games>
+        <HelpSection></HelpSection>
       </Container>
     </div>
   );
