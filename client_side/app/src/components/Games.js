@@ -13,7 +13,6 @@ import {API_ENDPOINT} from '../env.js';
 class Games extends React.Component {
 
     requestPath = '/worms/api/games';
-    timeoutId = null;
     state = {
       games: [],
       currentPage: 0,
@@ -23,30 +22,23 @@ class Games extends React.Component {
     };
   
     componentDidMount() {
-      this.fetchData(false);
+      this.fetchData();
     }
   
     async fetchData(resetBackground) {
-      if(this.state.currentPage === 0) {
-        this.timeoutId = setTimeout(() => { this.fetchData(false)}, 5000);
-      } else {
-        if(this.timeoutId !== null) {
-          clearTimeout(this.timeoutId);
-          this.timeoutId = null;
-        }
-      }
-      if(resetBackground) {
-        this.setState((state, props) => ({
-          ...state,
-          resultsBackground: '#f5f5f5'
-        }));
-      }
+      this.setState((state, _) => ({
+        ...state,
+        resultsBackground: '#f5f5f5'
+      }));
   
-      let res = await fetch(`${API_ENDPOINT+this.requestPath}?page=${this.state.currentPage}&page_size=${this.state.pageSize}`, {
-        method: 'GET',
-      });
+      let url = new URL(API_ENDPOINT+this.requestPath);
+      url.searchParams.append('page', this.state.currentPage);
+      url.searchParams.append('page_size', this.state.pageSize);
+
+      let res = await fetch(url);
       let data = await res.json();
-      this.setState((state, props) => ({
+
+      this.setState((state, _) => ({
         ...state,
         games: data.games,
         numPages: data.num_pages,
@@ -70,7 +62,7 @@ class Games extends React.Component {
                   ...this.state,
                   pageSize: parseInt(event.target.value),
                   currentPage: 0,
-                }, () => this.fetchData(true));
+                }, this.fetchData);
               }
             }
           >
@@ -83,10 +75,10 @@ class Games extends React.Component {
         <div>
           <IconButton
               onClick={() => {
-                this.setState((state, props) => ({
+                this.setState((state, _) => ({
                   ...state,
                   currentPage: Math.max(0, state.currentPage - 1)
-                }), () => this.fetchData(true))
+                }), this.fetchData)
               }}
               aria-label="previous page"
             >
@@ -99,10 +91,10 @@ class Games extends React.Component {
   
           <IconButton
             onClick={() => {
-              this.setState((state, props) => ({
+              this.setState((state, _) => ({
                 ...state,
                 currentPage: Math.min(state.currentPage + 1, state.numPages - 1)
-              }), () => this.fetchData(true))
+              }), this.fetchData)
             }}
             aria-label="next page"
           >

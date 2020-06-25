@@ -25,18 +25,19 @@ class RankingTable extends React.Component {
     }
   
     async fetchData() {
-      let res = await fetch(`${API_ENDPOINT+this.requestPath}`, {
-        method: 'GET',
-      });
+      let url = new URL(API_ENDPOINT+this.requestPath);
+
+      let res = await fetch(url);
       let rows = await res.json();
-      this.setState((state, props) => ({
+
+      this.setState((state, _) => ({
         ...state,
         rows: rows,
       }));
     }
 
     changeSelectedPlayer(playerName){
-      this.setState((state, props) => ({
+      this.setState((state, _) => ({
         ...state,
         selectedPlayerName: playerName,
       }));
