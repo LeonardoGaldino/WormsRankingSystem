@@ -128,6 +128,8 @@ class RemovePlayerFromGameCommand(Command):
 
 class BackupDBCommand(Command):
 
+    MAX_RETRIES = 15
+
     @staticmethod
     def command_name() -> str:
         return 'backup_db'
@@ -143,17 +145,7 @@ class BackupDBCommand(Command):
             Argument('GOOGLE_CREDS_JSON_PATH', str),
         ]
 
-    def run(self):
-        [db_host, db_port, db_name, db_user, db_pass, google_creds_json_path] = self.validate_arguments()
-        print('Running {}...'.format(self.command_name()))
-
-        environ['PGPASSWORD'] = db_pass
-        error_code = system('pg_dump {} > db/db_dump -h {} -p {} -U {} 2> db/db_dump.err'
-            .format(db_name, db_host, db_port, db_user))
-
-        if error_code != 0:
-            raise SystemExit('Error code {} when generating db_dump.'.format(error_code))
-
+    def upload_db_dump(self, google_creds_json_path):
         SCOPES = ['https://www.googleapis.com/auth/drive']
         parents_ids = ['1Q9jfdzJfT9SVz7luRurjpevzQrZlG0YB']
 
@@ -171,3 +163,27 @@ class BackupDBCommand(Command):
         file = service.files().create(body=file_metadata,
                                             media_body=media,
                                             fields='id').execute()
+
+    def run(self):
+        [db_host, db_port, db_name, db_user, db_pass, google_creds_json_path] = self.validate_arguments()
+        print('Running {}...'.format(self.command_name()))
+
+        environ['PGPASSWORD'] = db_pass
+        error_code = system('pg_dump {} > db/db_dump -h {} -p {} -U {} 2> db/db_dump.err'
+            .format(db_name, db_host, db_port, db_user))
+
+        if error_code != 0:
+            raise SystemExit('Error code {} when generating db_dump.'.format(error_code))
+
+        _try = 0
+        last_exception = None
+        while _try < self.MAX_RETRIES:
+            try:
+                self.upload_db_dump(google_creds_json_path)
+                break
+            except Exception as e:
+                _try += 1
+                last_exception = e
+        else:
+            raise last_exception
+
