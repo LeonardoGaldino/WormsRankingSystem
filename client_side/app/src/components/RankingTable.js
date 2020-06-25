@@ -8,7 +8,7 @@ import TableRow from '@material-ui/core/TableRow'
 import RankingNumberTableCell from './RankingNumberTableCell.js'
 import RankingModal from './RankingModal.js'
 
-import {API_ENDPOINT , API_PORT , API_URL} from '../env.js'
+import {API_ENDPOINT} from '../env.js'
 
 
 class RankingTable extends React.Component {
@@ -35,11 +35,11 @@ class RankingTable extends React.Component {
       }));
     }
 
-    changeModalNameState(playerName){
+    changeSelectedPlayer(playerName){
       this.setState((state, props) => ({
         ...state,
         selectedPlayerName: playerName,
-      }))
+      }));
     }
   
     render() {
@@ -56,7 +56,7 @@ class RankingTable extends React.Component {
                 </TableHead>
                 <TableBody>
                   {this.state.rows.map((row, idx) => (
-                    <TableRow key={row.name} className = "playerTableRow" onClick = {() => this.changeModalNameState(row.name)}>
+                    <TableRow key={row.name} className = "playerTableRow" onClick={() => this.changeSelectedPlayer(row.name)}>
                       <RankingNumberTableCell name={row.name} idx={idx}></RankingNumberTableCell>
                       <TableCell align="center" component="td" scope="row">{row.name}</TableCell>
                       <TableCell style={{color: row.ranking >= 1500 ? 'green' : 'red'}} 
@@ -72,7 +72,7 @@ class RankingTable extends React.Component {
                 </TableBody>
               </Table>
               <RankingModal
-                  methd = {this.changeModalNameState.bind(this)}
+                  onModalClose={this.changeSelectedPlayer.bind(this)}
                   name={this.state.selectedPlayerName}
                 >
               </RankingModal>

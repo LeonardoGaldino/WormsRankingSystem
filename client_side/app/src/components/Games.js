@@ -1,5 +1,4 @@
 import React from 'react';
-import Game from './Game.js'
 import MenuItem from '@material-ui/core/MenuItem';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
@@ -8,7 +7,8 @@ import Paper from '@material-ui/core/Paper';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 
-import {API_ENDPOINT , API_PORT , API_URL} from '../env.js'
+import Game from './Game.js'
+import {API_ENDPOINT} from '../env.js';
 
 class Games extends React.Component {
 

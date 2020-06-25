@@ -1,5 +1,5 @@
 import React from 'react'
-import MyChart from './MyChart.js'
+import RankingHistoryChart from './RankingHistoryChart.js'
 
 import Button from '@material-ui/core/Button';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -11,7 +11,7 @@ import Divider from '@material-ui/core/Divider';
 class RankingModal extends React.Component {
 
     handleClose = () => {
-        this.props.methd(null);
+        this.props.onModalClose(null);
     }
 
     render() {
@@ -26,7 +26,7 @@ class RankingModal extends React.Component {
                     <DialogTitle id="alert-dialog-title">{this.props.name}'s ranking history</DialogTitle>
     
                     <DialogContent>
-                        <MyChart player={this.props.name}></MyChart>
+                        <RankingHistoryChart player={this.props.name}></RankingHistoryChart>
                     </DialogContent>
     
                     <Divider />
