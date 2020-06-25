@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from os import system
+from os import system, environ
 
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
@@ -139,13 +139,15 @@ class BackupDBCommand(Command):
             Argument('DB_PORT', int),
             Argument('DB_NAME', str),
             Argument('DB_USER', str),
+            Argument('DB_PASSWORD', str),
             Argument('GOOGLE_CREDS_JSON_PATH', str),
         ]
 
     def run(self):
-        [db_host, db_port, db_name, db_user, google_creds_json_path] = self.validate_arguments()
+        [db_host, db_port, db_name, db_user, db_pass, google_creds_json_path] = self.validate_arguments()
         print('Running {}...'.format(self.command_name()))
 
+        environ['PGPASSWORD'] = db_pass
         error_code = system('pg_dump {} > db/db_dump -h {} -p {} -U {} 2> db/db_dump.err'
             .format(db_name, db_host, db_port, db_user))
 
@@ -169,4 +171,3 @@ class BackupDBCommand(Command):
         file = service.files().create(body=file_metadata,
                                             media_body=media,
                                             fields='id').execute()
-        
