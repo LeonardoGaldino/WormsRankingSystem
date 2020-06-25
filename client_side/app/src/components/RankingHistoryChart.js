@@ -33,20 +33,29 @@ class RankingHistoryChart extends React.Component {
         ctx.style.backgroundColor = 'rgba(30,30,30,1)';
 
         let currentRanking = data.current_ranking;
+        let lowestRanking = currentRanking;
         let highestRanking = currentRanking;
 
         let rankings = [currentRanking];
         for(let game of data.history.reverse()){
             currentRanking -= game.delta_ranking;
             rankings.push(currentRanking);
-            if(currentRanking > highestRanking){
-                highestRanking = currentRanking;
-            }
+            highestRanking = Math.max(highestRanking, currentRanking);
+            lowestRanking = Math.min(lowestRanking, currentRanking);
         }
         rankings = rankings.reverse();
 
-        let borderColorArray = rankings.map(ranking => (ranking === highestRanking)
-             ? 'rgba(255,0,0,1)' : 'rgba(236,245,66,1)');
+        let getBorderColor = (ranking) => {
+            if(ranking === highestRanking) {
+                return 'rgba(0,0,255,1)';
+            } else if(ranking === lowestRanking) {
+                return 'rgba(255,0,0,1)'
+            } else {
+                return 'rgba(236,245,66,1)';
+            }
+        }
+
+        let borderColorArray = rankings.map(getBorderColor);
         let xLabels = [''].concat(data.history.map(game => dayjs.unix(game.game_ts).format('DD/MM/YY')).reverse());
 
         new Chart(ctx, {
