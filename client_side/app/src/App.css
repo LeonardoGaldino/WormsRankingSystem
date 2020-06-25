@@ -28,7 +28,7 @@
 .playerTableRow:hover{
   cursor: pointer;
   background-color: #e6e6e6;
-  transition: 1.0s;
+  transition: 0.5s;
 }
 
 .playerNameInModal{
