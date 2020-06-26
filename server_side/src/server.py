@@ -1,8 +1,10 @@
+from os import environ
 import json
 from functools import reduce
+from math import ceil
 
-from .db import PostgresDB
-from .ranking import GameRankingComputer, PlayerStats
+from src.db import PostgresDB
+from src.ranking import GameRankingComputer, PlayerStats
 
 from flask import Flask, request, Response
 from flask_cors import CORS
@@ -12,32 +14,34 @@ import psycopg2
 app = Flask(__name__)
 CORS(app)
 
-get_ranking_endpoint = 'get_ranking'
-get_games_endpoint = 'get_games'
-create_game_endpoint = 'create_game'
+db_connection_str = environ['PG_CONNECTION_STR']
 
-db_connection_string = 'dbname=worms user=lcgm host=localhost port=5432 password=123k321k'
-db_conns = {
-    get_ranking_endpoint: PostgresDB(db_connection_string),
-    get_games_endpoint: PostgresDB(db_connection_string),
-    create_game_endpoint: PostgresDB(db_connection_string),
-}
+@app.route('/worms/api/player/ranking_history', methods=['GET'])
+def player_ranking_history():
+    db = PostgresDB(db_connection_str)
+    player_name = request.args['player_name']
+    return json.dumps(db.get_player_ranking_history(player_name),ensure_ascii=False)
+    
 
-
-@app.route('/worms/api/ranking', methods=['GET'], endpoint=get_ranking_endpoint)
+@app.route('/worms/api/ranking', methods=['GET'])
 def ranking():
-    db = db_conns[request.endpoint]
+    db = PostgresDB(db_connection_str)
     return json.dumps(db.get_ranking(), ensure_ascii=False)
 
 
-@app.route('/worms/api/games', methods=['GET'], endpoint=get_games_endpoint)
+@app.route('/worms/api/games', methods=['GET'])
 def games():
-    db = db_conns[request.endpoint]
-    return json.dumps(db.get_games(), ensure_ascii=False)
+    db = PostgresDB(db_connection_str)
+    page_size, page = int(request.args.get('page_size', 5)), int(request.args.get('page', 0))
+    num_pages = ceil(db.get_num_games()/page_size)
+    
+    games_res = db.get_games(page_size, page)
 
-@app.route('/worms/api/create/game', methods=['POST'], endpoint=create_game_endpoint)
+    return json.dumps({'num_pages': num_pages, 'games': games_res}, ensure_ascii=False)
+
+@app.route('/worms/api/create/game', methods=['POST'])
 def create_game():
-    db = db_conns[request.endpoint]
+    db = PostgresDB(db_connection_str)
     game_id = None
 
     try:

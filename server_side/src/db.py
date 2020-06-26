@@ -24,10 +24,27 @@ games_query = """
         pgr.score,
         pgr.ranking_delta
         FROM player_stats ps
-        INNER JOIN game g ON g.id = ps.game_id
+        INNER JOIN game g ON g.id = ps.game_id 
+            AND g.id IN 
+                (SELECT g2.id FROM game g2 WHERE score IS NOT NULL
+                    AND avg_score_after IS NOT NULL ORDER BY g2.insertion_timestamp DESC LIMIT %s OFFSET %s)
         INNER JOIN player p ON p.id = ps.player_id 
         INNER JOIN player_game_ranking pgr ON pgr.player_id = p.id AND pgr.game_id = g.id 
         ORDER BY (g.insertion_timestamp, pgr.score) DESC NULLS LAST
+"""
+
+num_games_query = "SELECT COUNT(*) FROM game WHERE score IS NOT NULL AND avg_score_after IS NOT NULL;"
+
+player_stats_query = """
+    SELECT
+        ps.player_id,
+        ps.game_id,
+        p.name,
+        ps.kills,
+        ps.damage,
+        ps.self_damage
+        FROM player_stats ps
+        INNER JOIN player p ON p.id = ps.player_id;
 """
 
 player_query = """
@@ -35,6 +52,15 @@ player_query = """
         id, ranking
         FROM player
         WHERE LOWER(name) = LOWER(%s);
+"""
+
+player_ranking_history_query = """
+    SELECT
+        pgr.ranking_delta,
+        g.insertion_timestamp
+        FROM player_game_ranking pgr, game g 
+        WHERE pgr.player_id = %s AND g.id = pgr.game_id
+        ORDER BY g.insertion_timestamp ASC;
 """
 
 player_avg_score_query = """
@@ -83,6 +109,11 @@ insert_player_game_ranking_stmt = """
     ) VALUES (%s, %s, %s, %s);
 """
 
+delete_player_game_ranking_stmt = "DELETE FROM player_game_ranking WHERE player_id = %s AND game_id = %s"
+delete_player_stats_stmt = "DELETE FROM player_stats WHERE player_id = %s AND game_id = %s"
+
+truncate_player_game_ranking_stmt = "TRUNCATE TABLE player_game_ranking;"
+
 class PostgresDB:
 
     def __init__(self, connection_string: str):
@@ -98,6 +129,12 @@ class PostgresDB:
         self.cursor.execute(global_game_avg_query, (game_id,))
         res = self.cursor.fetchone()
         return 0 if res is None else float(res[0])
+
+    def get_players_stats(self):
+        self.cursor.execute(player_stats_query)
+        res = self.cursor.fetchall()
+
+        return self.parse_players_stats_response(res)
 
     def get_game_avg_ranking(self, player_ids: [int]):
         id_list = '('
@@ -124,22 +161,38 @@ class PostgresDB:
         self.conn.commit()
         return game_id
 
+    def get_player_ranking_history(self, player_name: str):
+        player_id, player_ranking = self.get_player_data(player_name)
+        self.cursor.execute(player_ranking_history_query, (player_id,))
+        db_response = self.cursor.fetchall()
+        ranking_history_list = list(map(lambda row: {'delta_ranking': row[0] , 'game_ts': int(row[1].timestamp())}, db_response))
+        return_object = {'current_ranking': player_ranking , 'history': ranking_history_list}
+        return return_object
+
     def get_ranking(self):
         self.cursor.execute(ranking_query)
         res = self.cursor.fetchall()
 
         return self.parse_ranking_response(res)
 
-    def get_games(self):
-        self.cursor.execute(games_query)
+    def get_games(self, page_size: int = None, page: int = None):
+        page_size = page_size if page_size is not None else 5
+        offset = page*page_size if page is not None else 0
+
+        self.cursor.execute(games_query, (page_size, offset,))
         res = self.cursor.fetchall()
 
         return self.parse_games_response(res)
 
+    def get_num_games(self):
+        self.cursor.execute(num_games_query)
+        res = self.cursor.fetchone()
+
+        return int(res[0])
+
     def get_player_data(self, player_name: str):
         self.cursor.execute(player_query, (player_name,))
         res = self.cursor.fetchone()
-
         return res[0], res[1]
 
     def insert_player_stats(self, player_id: int, game_id, kills: int, damage: int, self_damage: int):
@@ -147,6 +200,15 @@ class PostgresDB:
 
     def insert_player_game_ranking(self, player_id: int, game_id: int, player_score: float, ranking_delta: float):
         self.cursor.execute(insert_player_game_ranking_stmt, (player_id, game_id, player_score, ranking_delta))
+
+    def truncate_player_game_ranking(self):
+        self.cursor.execute(truncate_player_game_ranking_stmt)
+        self.commit()
+
+    def delete_player_from_game(self, player_id: int, game_id: int):
+        self.cursor.execute(delete_player_game_ranking_stmt, (player_id, game_id))
+        self.cursor.execute(delete_player_stats_stmt, (player_id, game_id))
+        self.commit()
 
     def commit(self):
         self.conn.commit()
@@ -157,14 +219,31 @@ class PostgresDB:
     def safe_score(self, value: float):
         return 0 if value is None else value
 
-    def parse_games_response(self, raw_data: str):
-        date_index = {}
+    def parse_players_stats_response(self, raw_data):
+        parsed_data = {}
         for data in raw_data:
-            insertion_ts = data[1]
-            parsed_date = '{}/{}/{}'.format(insertion_ts.day, insertion_ts.month, insertion_ts.year)
-            games_for_date = date_index.get(parsed_date, {})
-            # get game for given id
-            player_entries = games_for_date.get(data[0], []) 
+            player_id, game_id, player_name, kills, damage, self_damage = data
+            game_id = int(game_id)
+
+            entries = parsed_data.get(game_id, [])
+            entries.append({
+                'player_id': int(player_id),
+                'name': player_name.strip(),
+                'kills': int(kills),
+                'damage': int(damage),
+                'self_damage': int(self_damage),
+            })
+            parsed_data[game_id] = entries
+        return parsed_data
+
+    def parse_games_response(self, raw_data):
+        game_by_ts = {}
+        for data in raw_data:
+            insertion_dt = data[1]
+            ts = insertion_dt.timestamp()
+
+            player_entries = game_by_ts.get(ts, [])
+
             player_entries.append({
                 'name': data[2].strip(),
                 'kills': data[3],
@@ -173,11 +252,10 @@ class PostgresDB:
                 'score': data[6],
                 'ranking_delta': data[7],
             })
-            #games_for_date[data[0]] = sorted(player_entries, key=lambda v: v['position'])
-            games_for_date[data[0]] = player_entries
-            date_index[parsed_date] = games_for_date
-        return date_index
+            
+            game_by_ts[ts] = player_entries
+        return game_by_ts
 
-    def parse_ranking_response(self, raw_data: str):
+    def parse_ranking_response(self, raw_data):
         return [{'name': data[0].strip(), 'ranking': data[1], 'games': data[2],
-            'score_avg': self.safe_score(data[3])} for data in raw_data]
+            'score_avg': round(self.safe_score(data[3]))} for data in raw_data]
