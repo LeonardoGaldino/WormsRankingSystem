@@ -27,7 +27,7 @@ public:
         this->hProcess = hProcess;
         this->nameAddress = nameAddress;
         this->nWorms = 3;
-        this->teamName = "Team at " + to_string(nameAddress) + " name not computed yet.";
+        this->teamName = string();
         this->kills = 0;
         this->totalDamage = 0;
         this->selfDamage = 0;
@@ -56,7 +56,12 @@ public:
             NULL
         );
         teamName[16] = '\0';
-        this->teamName = string(teamName);
+
+        string teamNameStr = string(teamName);
+        if(!this->teamName.empty() && this->teamName != teamNameStr) {
+            return true;
+        }
+        this->teamName = teamNameStr;
 
         for(int i = 0 ; i < this->nWorms ; ++i) {
             SIZE_T read;
