@@ -176,8 +176,8 @@ class BackupDBCommand(Command):
         if error_code != 0:
             raise SystemExit('Error code {} when generating db_dump.'.format(error_code))
 
-        # Increase connection creation timeout
-        socket.setdefaulttimeout(600)
+        # Increase connection creation timeout to 10 minutes
+        socket.setdefaulttimeout(60*10)
 
         _try = 0
         last_exception = None
