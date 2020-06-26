@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from os import system, environ
+import socket
 
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
@@ -174,6 +175,9 @@ class BackupDBCommand(Command):
 
         if error_code != 0:
             raise SystemExit('Error code {} when generating db_dump.'.format(error_code))
+
+        # Increase connection creation timeout
+        socket.setdefaulttimeout(600)
 
         _try = 0
         last_exception = None
