@@ -62,3 +62,13 @@
     transform: scale(1.3);
   }
 }
+
+mjx-container[display="true"] {
+  margin-bottom: 10px !important;
+  margin-top: 10px !important;
+}
+
+.help-section-paragraph {
+  margin-bottom: 10px !important;
+  margin-top: 10px !important; 
+}
