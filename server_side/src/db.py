@@ -56,6 +56,7 @@ player_query = """
 
 player_ranking_history_query = """
     SELECT
+        g.id,
         pgr.ranking_delta,
         g.insertion_timestamp
         FROM player_game_ranking pgr, game g 
@@ -165,7 +166,11 @@ class PostgresDB:
         player_id, player_ranking = self.get_player_data(player_name)
         self.cursor.execute(player_ranking_history_query, (player_id,))
         db_response = self.cursor.fetchall()
-        ranking_history_list = list(map(lambda row: {'delta_ranking': row[0] , 'game_ts': int(row[1].timestamp())}, db_response))
+        ranking_history_list = list(map(lambda row: {
+            'game_id': row[0],
+            'delta_ranking': row[1], 
+            'game_ts': int(row[2].timestamp())
+        }, db_response))
         return_object = {'current_ranking': player_ranking , 'history': ranking_history_list}
         return return_object
 
