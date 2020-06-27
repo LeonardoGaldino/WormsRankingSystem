@@ -37,14 +37,17 @@ class RankingHistoryChart extends React.Component {
 
         let rankings = new Array(data.history.length + 1);
         rankings[data.history.length] = {
+            gameId: data.history[data.history.length - 1].game_id,
             x: new Date(data.history[data.history.length - 1].game_ts * 1000),
             y: currentRanking,
         }
 
         for(let idx = data.history.length - 1 ; idx >= 0 ; --idx) {
+            let gameId = null;
             // Project start date
             let gameDate = Date.parse('01 Jun 2020 00:00:00 GMT-03:00');
             if(idx > 0) {
+                gameId = data.history[idx-1].game_id;
                 let gameTs = data.history[idx-1].game_ts;
                 gameDate = new Date(gameTs*1000);
             }
@@ -55,6 +58,7 @@ class RankingHistoryChart extends React.Component {
             lowestRanking = Math.min(lowestRanking, currentRanking);
 
             rankings[idx] = {
+                gameId: gameId,
                 x: gameDate,
                 y: currentRanking,
             }
