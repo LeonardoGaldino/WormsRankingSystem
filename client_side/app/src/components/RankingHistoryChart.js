@@ -1,7 +1,6 @@
 import React from 'react'
 import Chart from 'chart.js'
 import CachedSharpIcon from '@material-ui/icons/CachedSharp';
-import dayjs from 'dayjs';
 
 import {API_ENDPOINT} from '../env.js';
 
@@ -36,51 +35,72 @@ class RankingHistoryChart extends React.Component {
         let lowestRanking = currentRanking;
         let highestRanking = currentRanking;
 
-        let rankings = [currentRanking];
-        for(let game of data.history.reverse()){
-            currentRanking -= game.delta_ranking;
-            rankings.push(currentRanking);
+        let rankings = new Array(data.history.length + 1);
+        rankings[data.history.length] = {
+            x: new Date(data.history[data.history.length - 1].game_ts * 1000),
+            y: currentRanking,
+        }
+
+        for(let idx = data.history.length - 1 ; idx >= 0 ; --idx) {
+            // Project start date
+            let gameDate = Date.parse('01 Jun 2020 00:00:00 GMT-03:00');
+            if(idx > 0) {
+                let gameTs = data.history[idx-1].game_ts;
+                gameDate = new Date(gameTs*1000);
+            }
+
+            currentRanking -= data.history[idx].delta_ranking;
+
             highestRanking = Math.max(highestRanking, currentRanking);
             lowestRanking = Math.min(lowestRanking, currentRanking);
+
+            rankings[idx] = {
+                x: gameDate,
+                y: currentRanking,
+            }
         }
-        rankings = rankings.reverse();
 
         let getBorderColor = (ranking) => {
-            if(ranking === highestRanking) {
+            if(ranking.y === highestRanking) {
                 return 'rgba(0,0,255,1)';
-            } else if(ranking === lowestRanking) {
+            } else if(ranking.y === lowestRanking) {
                 return 'rgba(255,0,0,1)'
             } else {
                 return 'rgba(236,245,66,1)';
             }
         }
 
-        let borderColorArray = rankings.map(getBorderColor);
-        let xLabels = [''].concat(data.history.map(game => dayjs.unix(game.game_ts).format('DD/MM/YY')).reverse());
-
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: xLabels,
                 datasets: [{
                     fill: false,
                     label: 'Ranking',
                     data: rankings,
                     backgroundColor: 'rgba(220,220,220,1)',
                     borderColor: 'rgba(236,245,66,1)',
-                    pointBorderColor: borderColorArray,
+                    pointBorderColor: rankings.map(getBorderColor),
                     borderWidth: .8,
                 }]
             },
             options: {
                 responsive: true,
                 scales: {
+                    xAxes: [{
+                        type: 'time',
+                        distribution: 'series',
+                        time: {
+                            displayFormats: {
+                                year: 'D/M/YY',
+                            }
+                        }
+                    }],
                     yAxes: [{
                         ticks: {
                             beginAtZero: false
                         }
                     }],
-                }
+                },
             }
         });
     }
