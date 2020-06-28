@@ -1,13 +1,14 @@
 from os import environ
 from sys import argv, stderr, exit
 
-from src.commands import Command, RecomputeRankingCommand, RemovePlayerFromGameCommand, BackupDBCommand
+from src.commands import Command, RecomputeRankingCommand, RemovePlayerFromGameCommand, BackupDBCommand, CreateUnixSocket
 
 
 VALID_COMMANDS: [Command] = [
     RecomputeRankingCommand,
     RemovePlayerFromGameCommand,
     BackupDBCommand,
+    CreateUnixSocket,
 ]
 
 def main():

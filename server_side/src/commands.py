@@ -191,3 +191,22 @@ class BackupDBCommand(Command):
         else:
             raise last_exception
 
+
+class CreateUnixSocket(Command):
+
+    @staticmethod
+    def command_name() -> str:
+        return 'create_unix_socket'
+
+    @staticmethod
+    def arguments() -> [Argument]:
+        return [
+            Argument('SOCKET_NAME', str),
+        ]
+
+    def run(self):
+        [socket_name] = self.validate_arguments()
+        print('Running {}...'.format(self.command_name()))
+
+        sock = socket.socket(socket.AF_UNIX)
+        sock.bind(socket_name)
