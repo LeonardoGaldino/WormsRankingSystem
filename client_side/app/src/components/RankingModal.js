@@ -26,8 +26,10 @@ class RankingModal extends React.Component {
                 aria-describedby="alert-dialog-description">
                     <DialogTitle id="alert-dialog-title">{this.props.name}'s ranking history</DialogTitle>
     
+                    <Divider />
+    
                     <DialogContent>
-                        <p style={{marginBottom: 8}}> 
+                        <p style={{marginBottom: 8, marginTop: 0}}> 
                             <InfoIcon style={{position: 'relative', top: 4}} color={'primary'} fontSize={'small'}></InfoIcon> Click on a point to see game details 
                         </p>
 
