@@ -39,6 +39,14 @@ def games():
 
     return json.dumps({'num_pages': num_pages, 'games': games_res}, ensure_ascii=False)
 
+@app.route('/worms/api/game', methods=['GET'])
+def game():
+    db = PostgresDB(db_connection_str)
+    game_id = int(request.args.get('game_id'))
+    
+    game_res = db.get_game(game_id)
+    return json.dumps(game_res, ensure_ascii=False)
+
 @app.route('/worms/api/create/game', methods=['POST'])
 def create_game():
     db = PostgresDB(db_connection_str)

@@ -33,6 +33,23 @@ games_query = """
         ORDER BY (g.insertion_timestamp, pgr.score) DESC NULLS LAST
 """
 
+game_query = """
+    SELECT
+        g.id,
+        g.insertion_timestamp,
+        p.name,
+        ps.kills,
+        ps.damage,
+        ps.self_damage,
+        pgr.score,
+        pgr.ranking_delta
+        FROM player_stats ps
+        INNER JOIN game g ON g.id = ps.game_id
+            AND g.id = %s
+        INNER JOIN player p ON p.id = ps.player_id 
+        INNER JOIN player_game_ranking pgr ON pgr.player_id = p.id AND pgr.game_id = g.id
+"""
+
 num_games_query = "SELECT COUNT(*) FROM game WHERE score IS NOT NULL AND avg_score_after IS NOT NULL;"
 
 player_stats_query = """
@@ -188,6 +205,23 @@ class PostgresDB:
         res = self.cursor.fetchall()
 
         return self.parse_games_response(res)
+
+    def get_game(self, game_id: int):
+        self.cursor.execute(game_query, (game_id,))
+        res = self.cursor.fetchall()
+
+        return {
+            'game_id': res[0][0],
+            'game_ts': res[0][1].timestamp(),
+            'players_data': list(map(lambda data: {
+                'name': data[2].strip(),
+                'kills': data[3],
+                'damage': data[4],
+                'self_damage': data[5],
+                'score': data[6],
+                'ranking_delta': data[7],
+            }, res))
+        }
 
     def get_num_games(self):
         self.cursor.execute(num_games_query)
