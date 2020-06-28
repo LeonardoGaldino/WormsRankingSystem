@@ -48,6 +48,7 @@ game_query = """
             AND g.id = %s
         INNER JOIN player p ON p.id = ps.player_id 
         INNER JOIN player_game_ranking pgr ON pgr.player_id = p.id AND pgr.game_id = g.id
+        ORDER BY pgr.score DESC NULLS LAST
 """
 
 num_games_query = "SELECT COUNT(*) FROM game WHERE score IS NOT NULL AND avg_score_after IS NOT NULL;"
