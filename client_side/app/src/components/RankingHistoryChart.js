@@ -10,26 +10,50 @@ import Dialog from '@material-ui/core/Dialog';
 import Divider from '@material-ui/core/Divider';
 
 import {API_ENDPOINT} from '../env.js';
+import Game from './Game.js'
 
 class RankingHistoryChart extends React.Component {
 
     state = {
-        data: null,
+        rankingData: null,
         renderedChart: false,
         selectedGameId: null,
+        gameData: null,
     }
-    requestPath = '/worms/api/player/ranking_history';
+    rankingHistoryRequestPath = '/worms/api/player/ranking_history';
+    gameRequestPath = '/worms/api/game';
 
     renderGame(gameId) {
         this.setState((state, _) => ({
             ...state,
             selectedGameId: gameId,
-        }));
+        }), this.fetchGameData);
+    }
+
+    async fetchGameData() {
+        if(this.state.selectedGameId !== null) {
+            let url = new URL(API_ENDPOINT + this.gameRequestPath);
+            url.searchParams.append('game_id', this.state.selectedGameId);
+
+            let res = await fetch(url);
+            let resJSON = await res.json();
+            console.log(resJSON);
+
+            this.setState((state, _) => ({
+                ...state,
+                gameData: resJSON,
+            }));
+        } else {
+            this.setState((state, _) => ({
+                ...state,
+                gameData: null,
+            }));
+        }
     }
 
 
-    async fetchData(playerName){
-      let url = new URL(API_ENDPOINT + this.requestPath);
+    async fetchRankingData(playerName){
+      let url = new URL(API_ENDPOINT + this.rankingHistoryRequestPath);
       url.searchParams.append('player_name', playerName);
 
       let res = await fetch(url);
@@ -37,17 +61,17 @@ class RankingHistoryChart extends React.Component {
 
       this.setState((state, _) => ({
           ...state,
-          data: resJSON,
+          rankingData: resJSON,
       }));
     }
 
-    // After data is available
+    // After ranking data is available
     componentDidUpdate() {
         if(this.state.renderedChart) {
             return;
         }
 
-        let data = this.state.data;
+        let data = this.state.rankingData;
 
         let ctx = document.getElementById('ranking-history-chart');
         ctx.style.backgroundColor = 'rgba(30,30,30,1)';
@@ -141,7 +165,7 @@ class RankingHistoryChart extends React.Component {
     }
 
     componentDidMount(){
-        this.fetchData(this.props.player);
+        this.fetchRankingData(this.props.player);
     }
 
     render(){
@@ -149,6 +173,7 @@ class RankingHistoryChart extends React.Component {
             return <div>
                 <canvas id="ranking-history-chart"></canvas>
                 <Dialog
+                    PaperProps={{style: {backgroundColor: '#f5f5f5'}}}
                     maxWidth='md'
                     fullWidth={true}
                     open={this.state.selectedGameId !== null}
@@ -157,8 +182,16 @@ class RankingHistoryChart extends React.Component {
                     aria-describedby="alert-dialog-description">
                         <DialogTitle id="alert-dialog-title">Game {this.state.selectedGameId}</DialogTitle>
         
-                        <DialogContent>
-                            TODO
+                        <Divider />
+
+                        <DialogContent style={{marginBottom: 20}}>
+                            {this.state.gameData !== null && 
+                            <Game gameTs={this.state.gameData.game_ts} playerEntries={this.state.gameData.players_data}>
+                            </Game>}
+                            {this.state.gameData === null && 
+                            <div style={{textAlign: 'center', marginTop: 20}}>
+                                <CachedSharpIcon className='icon-spinner' fontSize='large' />
+                            </div>}
                         </DialogContent>
         
                         <Divider />
