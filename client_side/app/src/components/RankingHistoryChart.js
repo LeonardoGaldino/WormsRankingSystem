@@ -115,6 +115,7 @@ class RankingHistoryChart extends React.Component {
                         type: 'time',
                         distribution: 'series',
                         time: {
+                            unit: 'year',
                             displayFormats: {
                                 year: 'D/M/YY',
                             }
