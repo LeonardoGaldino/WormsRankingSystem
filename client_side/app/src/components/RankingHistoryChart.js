@@ -2,14 +2,30 @@ import React from 'react'
 import Chart from 'chart.js'
 import CachedSharpIcon from '@material-ui/icons/CachedSharp';
 
+import Button from '@material-ui/core/Button';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Dialog from '@material-ui/core/Dialog';
+import Divider from '@material-ui/core/Divider';
+
 import {API_ENDPOINT} from '../env.js';
 
 class RankingHistoryChart extends React.Component {
 
     state = {
         data: null,
+        renderedChart: false,
+        selectedGameId: null,
     }
     requestPath = '/worms/api/player/ranking_history';
+
+    renderGame(gameId) {
+        this.setState((state, _) => ({
+            ...state,
+            selectedGameId: gameId,
+        }));
+    }
 
 
     async fetchData(playerName){
@@ -19,13 +35,18 @@ class RankingHistoryChart extends React.Component {
       let res = await fetch(url);
       let resJSON = await res.json();
 
-      this.setState({
+      this.setState((state, _) => ({
+          ...state,
           data: resJSON,
-      });
+      }));
     }
 
     // After data is available
     componentDidUpdate() {
+        if(this.state.renderedChart) {
+            return;
+        }
+
         let data = this.state.data;
 
         let ctx = document.getElementById('ranking-history-chart');
@@ -105,8 +126,17 @@ class RankingHistoryChart extends React.Component {
                         }
                     }],
                 },
+                onClick: (_, elems) => {
+                    if(elems.length > 0) {
+                        this.renderGame(rankings[elems[0]._index].gameId);
+                    }
+                }
             }
         });
+        this.setState((state, _) => ({
+            ...state,
+            renderedChart: true,
+        }));
     }
 
     componentDidMount(){
@@ -114,13 +144,36 @@ class RankingHistoryChart extends React.Component {
     }
 
     render(){
-        return (this.state.data !== null ?
-                    <canvas id="ranking-history-chart"></canvas>
-                    :
-                    <div style={{textAlign: 'center'}}>
-                        <CachedSharpIcon className='icon-spinner' fontSize='large' />
-                    </div>
-            );
+        if(this.state.data !== null) {
+            return <div>
+                <canvas id="ranking-history-chart"></canvas>
+                <Dialog
+                    maxWidth='md'
+                    fullWidth={true}
+                    open={this.state.selectedGameId !== null}
+                    onClose={() => this.renderGame(null)}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description">
+                        <DialogTitle id="alert-dialog-title">Game {this.state.selectedGameId}</DialogTitle>
+        
+                        <DialogContent>
+                            TODO
+                        </DialogContent>
+        
+                        <Divider />
+                        
+                        <DialogActions>
+                            <Button onClick={() => this.renderGame(null)} color="primary" autoFocus>
+                                Close
+                            </Button>
+                        </DialogActions>
+                </Dialog>
+            </div>
+        } else {
+            return <div style={{textAlign: 'center'}}>
+                    <CachedSharpIcon className='icon-spinner' fontSize='large' />
+                </div>
+        }
     }
 }
 
