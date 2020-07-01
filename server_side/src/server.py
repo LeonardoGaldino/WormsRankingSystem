@@ -30,9 +30,9 @@ def player_ranking_history():
 def ranking():
     db = PostgresDB(db_connection_str)
     ranking = db.get_ranking()
-    ranking = [
-        dict(player_ranking, avatar_path=get_avatar_path(player_ranking['name']))
-                for player_ranking in ranking]
+    
+    for player_ranking in ranking:
+        player_ranking['avatar_path'] = get_avatar_path(player_ranking['name'])
 
     return json.dumps(ranking, ensure_ascii=False)
 
@@ -58,7 +58,7 @@ def game():
     game_res = db.get_game(game_id)
     for player_data in game_res['players_data']:
         player_data['avatar_path'] = get_avatar_path(player_data['name'])
-        
+
     return json.dumps(game_res, ensure_ascii=False)
 
 @app.route('/worms/api/create/game', methods=['POST'])
