@@ -56,6 +56,9 @@ def game():
     game_id = int(request.args.get('game_id'))
     
     game_res = db.get_game(game_id)
+    for player_data in game_res['players_data']:
+        player_data['avatar_path'] = get_avatar_path(player_data['name'])
+        
     return json.dumps(game_res, ensure_ascii=False)
 
 @app.route('/worms/api/create/game', methods=['POST'])
