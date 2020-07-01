@@ -16,6 +16,9 @@ CORS(app)
 
 db_connection_str = environ['PG_CONNECTION_STR']
 
+def get_avatar_path(player_name: str):
+    return '/images/{}.jpg'.format(player_name.lower().replace(' ', ''))
+
 @app.route('/worms/api/player/ranking_history', methods=['GET'])
 def player_ranking_history():
     db = PostgresDB(db_connection_str)
@@ -28,7 +31,7 @@ def ranking():
     db = PostgresDB(db_connection_str)
     ranking = db.get_ranking()
     ranking = [
-        dict(player_ranking, avatar_path='/images/{}.jpg'.format(player_ranking['name'].lower().replace(' ', ''))) 
+        dict(player_ranking, avatar_path=get_avatar_path(player_ranking['name']))
                 for player_ranking in ranking]
 
     return json.dumps(ranking, ensure_ascii=False)
@@ -41,6 +44,9 @@ def games():
     num_pages = ceil(db.get_num_games()/page_size)
     
     games_res = db.get_games(page_size, page)
+    for players_data in games_res.values():
+        for player in players_data:
+            player['avatar_path'] = get_avatar_path(player['name'])
 
     return json.dumps({'num_pages': num_pages, 'games': games_res}, ensure_ascii=False)
 
