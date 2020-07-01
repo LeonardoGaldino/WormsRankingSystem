@@ -17,7 +17,7 @@ CORS(app)
 db_connection_str = environ['PG_CONNECTION_STR']
 
 def get_avatar_path(player_name: str):
-    return '/images/{}.jpg'.format(player_name.lower().replace(' ', ''))
+    return '/worms/images/{}.jpg'.format(player_name.lower().replace(' ', ''))
 
 @app.route('/worms/api/player/ranking_history', methods=['GET'])
 def player_ranking_history():
