@@ -26,7 +26,12 @@ def player_ranking_history():
 @app.route('/worms/api/ranking', methods=['GET'])
 def ranking():
     db = PostgresDB(db_connection_str)
-    return json.dumps(db.get_ranking(), ensure_ascii=False)
+    ranking = db.get_ranking()
+    ranking = [
+        dict(player_ranking, avatar_path='/worms/images/{}.jpg'.format(player_ranking['name'].lower().replace(' ', ''))) 
+                for player_ranking in ranking]
+
+    return json.dumps(ranking, ensure_ascii=False)
 
 
 @app.route('/worms/api/games', methods=['GET'])
