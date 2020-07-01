@@ -7,6 +7,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow'
 import RankingNumberTableCell from './RankingNumberTableCell.js'
 import RankingModal from './RankingModal.js'
+import Avatar from '@material-ui/core/Avatar';
+import Chip from '@material-ui/core/Chip';
 
 import {API_ENDPOINT} from '../env.js'
 
@@ -59,7 +61,12 @@ class RankingTable extends React.Component {
                   {this.state.rows.map((row, idx) => (
                     <TableRow key={row.name} className = "playerTableRow" onClick={() => this.changeSelectedPlayer(row.name)}>
                       <RankingNumberTableCell name={row.name} idx={idx}></RankingNumberTableCell>
-                      <TableCell align="center" component="td" scope="row">{row.name}</TableCell>
+                      <TableCell align="center" component="td" scope="row">
+                        <Chip
+                          avatar={<Avatar alt="PlayerAvatar" src={API_ENDPOINT + row.avatar_path}>{row.name[0]}</Avatar>}
+                          label={row.name}
+                        />  
+                      </TableCell>
                       <TableCell style={{color: row.ranking >= 1500 ? 'green' : 'red'}} 
                         align="center" component="td" scope="row">
                           {row.ranking.toFixed(0)}
