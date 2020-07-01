@@ -6,9 +6,13 @@ import MuiTableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import Avatar from '@material-ui/core/Avatar';
+import Chip from '@material-ui/core/Chip';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import dayjs from 'dayjs';
+
+import {API_ENDPOINT} from '../env';
 
 class Game extends React.Component {
     render() {
@@ -25,7 +29,7 @@ class Game extends React.Component {
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell align="left"><strong>Name</strong></TableCell>
+              <TableCell align="left"><strong>Player</strong></TableCell>
               <TableCell align="center"><strong>Kills</strong></TableCell>
               <TableCell align="center"><strong>Damage</strong></TableCell>
               <TableCell align="center"><strong>Self damage</strong></TableCell>
@@ -36,7 +40,12 @@ class Game extends React.Component {
           <TableBody>
             {this.props.playerEntries.map((entry, idx) => (
               <TableRow key={entry.name}>
-                <TableCell align="left" component="td" scope="entry">{entry.name}</TableCell>
+                <TableCell align="left" component="td" scope="entry">
+                  <Chip
+                    avatar={<Avatar alt="PlayerAvatar" src={API_ENDPOINT + entry.avatar_path}>{entry.name[0]}</Avatar>}
+                    label={entry.name}
+                  />  
+                </TableCell>
                 <TableCell align="center" component="td" scope="entry">{entry.kills}</TableCell>
                 <TableCell align="center" component="td" scope="entry">{entry.damage}</TableCell>
                 <TableCell align="center" component="td" scope="entry">{entry.self_damage}</TableCell>
