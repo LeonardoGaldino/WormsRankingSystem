@@ -28,7 +28,7 @@ def ranking():
     db = PostgresDB(db_connection_str)
     ranking = db.get_ranking()
     ranking = [
-        dict(player_ranking, avatar_path='/worms/images/{}.jpg'.format(player_ranking['name'].lower().replace(' ', ''))) 
+        dict(player_ranking, avatar_path='/images/{}.jpg'.format(player_ranking['name'].lower().replace(' ', ''))) 
                 for player_ranking in ranking]
 
     return json.dumps(ranking, ensure_ascii=False)
