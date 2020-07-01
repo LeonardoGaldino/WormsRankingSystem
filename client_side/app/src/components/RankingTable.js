@@ -51,7 +51,7 @@ class RankingTable extends React.Component {
                 <TableHead>
                   <TableRow>
                     <TableCell align="center"><strong>#</strong></TableCell>
-                    <TableCell align="center"><strong>Name</strong></TableCell>
+                    <TableCell align="center"><strong>Player</strong></TableCell>
                     <TableCell align="center"><strong>Ranking</strong></TableCell>
                     <TableCell align="center"><strong>Average score</strong></TableCell>
                     <TableCell align="center"><strong>Games</strong></TableCell>
