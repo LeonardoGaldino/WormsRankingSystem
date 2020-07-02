@@ -210,3 +210,23 @@ class CreateUnixSocket(Command):
 
         sock = socket.socket(socket.AF_UNIX)
         sock.bind(socket_name)
+
+class DeleteGameCommand(Command):
+
+    @staticmethod
+    def command_name() -> str:
+        return 'delete_game'
+
+    @staticmethod
+    def arguments() -> [Argument]:
+        return [
+            Argument('DB_CONNECTION_STR', str),
+            Argument('GAME_ID', int),
+        ]
+
+    def run(self):
+        [db_connection_str, game_id] = self.validate_arguments()
+        print('Running {}...'.format(self.command_name()))
+
+        db = PostgresDB(db_connection_str)
+        db.delete_game(game_id)

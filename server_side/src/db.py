@@ -131,6 +131,10 @@ insert_player_game_ranking_stmt = """
 delete_player_game_ranking_stmt = "DELETE FROM player_game_ranking WHERE player_id = %s AND game_id = %s"
 delete_player_stats_stmt = "DELETE FROM player_stats WHERE player_id = %s AND game_id = %s"
 
+delete_player_game_ranking_from_game_id_stmt = "DELETE FROM player_game_ranking WHERE game_id = %s"
+delete_player_stats_from_game_id_stmt = "DELETE FROM player_stats WHERE game_id = %s"
+delete_game_stmt = "DELETE FROM game WHERE id = %s"
+
 truncate_player_game_ranking_stmt = "TRUNCATE TABLE player_game_ranking;"
 
 class PostgresDB:
@@ -223,6 +227,13 @@ class PostgresDB:
                 'ranking_delta': data[7],
             }, res))
         }
+
+    def delete_game(self, game_id: int):
+        self.cursor.execute(delete_player_stats_from_game_id_stmt, (game_id,))
+        self.cursor.execute(delete_player_game_ranking_from_game_id_stmt, (game_id,))
+        self.cursor.execute(delete_game_stmt, (game_id,))
+
+        self.commit()
 
     def get_num_games(self):
         self.cursor.execute(num_games_query)
