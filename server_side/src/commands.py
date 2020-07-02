@@ -146,7 +146,8 @@ class BackupDBCommand(Command):
             Argument('GOOGLE_CREDS_JSON_PATH', str),
         ]
 
-    def upload_db_dump(self, google_creds_json_path):
+    @staticmethod
+    def upload_db_dump(google_creds_json_path):
         SCOPES = ['https://www.googleapis.com/auth/drive']
         parents_ids = ['1Q9jfdzJfT9SVz7luRurjpevzQrZlG0YB']
 
