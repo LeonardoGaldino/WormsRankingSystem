@@ -192,7 +192,7 @@ class BackupDBCommand(Command):
             raise last_exception
 
 
-class CreateUnixSocket(Command):
+class CreateUnixSocketCommand(Command):
 
     @staticmethod
     def command_name() -> str:
