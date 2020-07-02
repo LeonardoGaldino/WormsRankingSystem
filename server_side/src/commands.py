@@ -159,7 +159,7 @@ class BackupDBCommand(Command):
         service = build('drive', 'v3', credentials=credentials)
 
         today = datetime.now()
-        file_name = 'db_backup-{}/{}/{}'.format(today.day, today.month, today.year)
+        file_name = 'db_backup-{}/{}/{}'.format(today.year, today.month, today.day)
         file_metadata = {'name': file_name, 'parents': parents_ids}
         media = MediaFileUpload('db/db_dump', mimetype='text/plain')
         file = service.files().create(body=file_metadata,
