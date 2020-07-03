@@ -29,6 +29,7 @@ class RankingHistoryChart extends React.Component {
     renderGame(gameData) {
         this.setState((state, _) => ({
             ...state,
+            gameData: null,
             selectedGame: gameData,
         }), this.fetchGameData);
     }
