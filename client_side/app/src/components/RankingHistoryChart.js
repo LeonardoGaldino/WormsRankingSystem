@@ -1,6 +1,9 @@
 import React from 'react'
 import Chart from 'chart.js'
 import CachedSharpIcon from '@material-ui/icons/CachedSharp';
+import NavigateBefore from '@material-ui/icons/NavigateBefore';
+import NavigateNext from '@material-ui/icons/NavigateNext';
+
 
 import Button from '@material-ui/core/Button';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -17,27 +20,43 @@ class RankingHistoryChart extends React.Component {
     state = {
         rankingData: null,
         renderedChart: false,
-        selectedGameId: null,
+        selectedGame: null,
         gameData: null,
     }
     rankingHistoryRequestPath = '/worms/api/player/ranking_history';
     gameRequestPath = '/worms/api/game';
 
-    renderGame(gameId) {
+    renderGame(gameData) {
         this.setState((state, _) => ({
             ...state,
-            selectedGameId: gameId,
+            selectedGame: gameData,
         }), this.fetchGameData);
     }
 
+    changeGame(forward) {
+        let currentIndex = this.state.selectedGame.index;
+
+        let newIndex;
+        if(forward) {
+            newIndex = Math.min(currentIndex+1, this.state.rankingData.processed.length-1);
+        } else {
+            // index 0 is not a game (ranking start with 1500 with no games played)
+            newIndex = Math.max(1, currentIndex-1);
+        }
+
+        this.renderGame({
+            id: this.state.rankingData.processed[newIndex].gameId,
+            index: newIndex,
+        });
+    }
+
     async fetchGameData() {
-        if(this.state.selectedGameId !== null) {
+        if(this.state.selectedGame !== null) {
             let url = new URL(API_ENDPOINT + this.gameRequestPath);
-            url.searchParams.append('game_id', this.state.selectedGameId);
+            url.searchParams.append('game_id', this.state.selectedGame.id);
 
             let res = await fetch(url);
             let resJSON = await res.json();
-            console.log(resJSON);
 
             this.setState((state, _) => ({
                 ...state,
@@ -51,7 +70,6 @@ class RankingHistoryChart extends React.Component {
         }
     }
 
-
     async fetchRankingData(playerName){
       let url = new URL(API_ENDPOINT + this.rankingHistoryRequestPath);
       url.searchParams.append('player_name', playerName);
@@ -61,7 +79,9 @@ class RankingHistoryChart extends React.Component {
 
       this.setState((state, _) => ({
           ...state,
-          rankingData: resJSON,
+          rankingData: {
+            raw: resJSON,
+          }
       }));
     }
 
@@ -71,7 +91,7 @@ class RankingHistoryChart extends React.Component {
             return;
         }
 
-        let data = this.state.rankingData;
+        let data = this.state.rankingData.raw;
 
         let ctx = document.getElementById('ranking-history-chart');
         ctx.style.backgroundColor = 'rgba(30,30,30,1)';
@@ -153,13 +173,20 @@ class RankingHistoryChart extends React.Component {
                 },
                 onClick: (_, elems) => {
                     if(elems.length > 0) {
-                        this.renderGame(rankings[elems[0]._index].gameId);
+                        let index = elems[0]._index;
+                        if(index > 0) {
+                            this.renderGame({index: index, id: rankings[index].gameId});
+                        }
                     }
                 }
             }
         });
         this.setState((state, _) => ({
             ...state,
+            rankingData: {
+                ...state.rankingData,
+                processed: rankings,
+            },
             renderedChart: true,
         }));
     }
@@ -169,18 +196,18 @@ class RankingHistoryChart extends React.Component {
     }
 
     render(){
-        if(this.state.data !== null) {
+        if(this.state.rankingData !== null) {
             return <div>
                 <canvas id="ranking-history-chart"></canvas>
                 <Dialog
                     PaperProps={{style: {backgroundColor: '#f5f5f5'}}}
                     maxWidth='md'
                     fullWidth={true}
-                    open={this.state.selectedGameId !== null}
+                    open={this.state.selectedGame !== null}
                     onClose={() => this.renderGame(null)}
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description">
-                        <DialogTitle id="alert-dialog-title">Game {this.state.selectedGameId}</DialogTitle>
+                        <DialogTitle id="alert-dialog-title">Game {(this.state.selectedGame !== null ? this.state.selectedGame.id : null)}</DialogTitle>
         
                         <Divider />
 
@@ -197,6 +224,12 @@ class RankingHistoryChart extends React.Component {
                         <Divider />
                         
                         <DialogActions>
+                            <Button onClick={() => this.changeGame(false)} color="primary" autoFocus>
+                               <NavigateBefore></NavigateBefore> Previous
+                            </Button>
+                            <Button onClick={() => this.changeGame(true)} color="primary" autoFocus>
+                                Next <NavigateNext></NavigateNext>
+                            </Button>
                             <Button onClick={() => this.renderGame(null)} color="primary" autoFocus>
                                 Close
                             </Button>
