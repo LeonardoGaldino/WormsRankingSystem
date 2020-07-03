@@ -45,10 +45,12 @@ class RankingHistoryChart extends React.Component {
             newIndex = Math.max(1, currentIndex-1);
         }
 
-        this.renderGame({
-            id: this.state.rankingData.processed[newIndex].gameId,
-            index: newIndex,
-        });
+        if(newIndex != this.state.selectedGame.index) {
+            this.renderGame({
+                id: this.state.rankingData.processed[newIndex].gameId,
+                index: newIndex,
+            });
+        }
     }
 
     async fetchGameData() {
