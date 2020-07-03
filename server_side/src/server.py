@@ -23,6 +23,8 @@ def get_avatar_path(player_name: str):
 def player_ranking_history():
     db = PostgresDB(db_connection_str)
     player_name = request.args['player_name']
+
+    db.commit()
     return json.dumps(db.get_player_ranking_history(player_name),ensure_ascii=False)
     
 
@@ -34,6 +36,7 @@ def ranking():
     for player_ranking in ranking:
         player_ranking['avatar_path'] = get_avatar_path(player_ranking['name'])
 
+    db.commit()
     return json.dumps(ranking, ensure_ascii=False)
 
 
@@ -48,6 +51,7 @@ def games():
         for player in players_data:
             player['avatar_path'] = get_avatar_path(player['name'])
 
+    db.commit()
     return json.dumps({'num_pages': num_pages, 'games': games_res}, ensure_ascii=False)
 
 @app.route('/worms/api/game', methods=['GET'])
@@ -59,6 +63,7 @@ def game():
     for player_data in game_res['players_data']:
         player_data['avatar_path'] = get_avatar_path(player_data['name'])
 
+    db.commit()
     return json.dumps(game_res, ensure_ascii=False)
 
 @app.route('/worms/api/create/game', methods=['POST'])
