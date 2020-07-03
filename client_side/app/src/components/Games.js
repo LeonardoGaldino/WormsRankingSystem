@@ -25,7 +25,7 @@ class Games extends React.Component {
       this.fetchData();
     }
   
-    async fetchData(resetBackground) {
+    async fetchData() {
       this.setState((state, _) => ({
         ...state,
         resultsBackground: '#f5f5f5'
