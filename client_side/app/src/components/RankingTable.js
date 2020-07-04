@@ -46,7 +46,7 @@ class RankingTable extends React.Component {
     }
   
     render() {
-      return <Paper style={{marginTop: 30, overflowX: 'scroll'}} elevation={4}>
+      return <Paper style={{marginTop: 30, overflowX: 'auto'}} elevation={4}>
               <Table size='medium' aria-label="simple table">
                 <TableHead>
                   <TableRow>
