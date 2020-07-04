@@ -22,9 +22,10 @@ def save_game(file_name):
                 'game_ts': end_ts, 
                 'player_stats': list(map(lambda team_data: {
                     'team_name': team_data[0],
-                    'kills': int(team_data[1]),
-                    'damage': int(team_data[2]),
-                    'self_damage': int(team_data[3])
+                    'rounds_played': int(team_data[1]),
+                    'kills': int(team_data[2]),
+                    'damage': int(team_data[3]),
+                    'self_damage': int(team_data[4])
                 }, teams_data))
             }
             
