@@ -60,18 +60,10 @@ class GameRankingComputer:
 
     def compute_delta_ranking(self, stats: PlayerStats) -> int:
         player_score = self.compute_score(stats)
-        #player_avg_score = self.db.get_player_avg_score(self.db.get_player_data(stats.name)[0])
         player_ranking = self.db.get_player_data(stats.name)[1]
         
         game_avg_score = self.get_game_avg_score()
-        #global_game_avg = self.db.get_global_game_avg_score(self.game_id)
         game_avg_ranking = self.db.get_game_avg_ranking(list(map(lambda player_stats: player_stats.id, self.game_stats)))
-
-        #player_weight = 1.0 if player_avg_score == 0 else player_score/player_avg_score
-        #player_weight = constrain(player_weight, 0.33, 3)
-
-        #game_weight = 1.0 if global_game_avg == 0 else game_avg_score/global_game_avg
-        #game_weight = constrain(game_weight, 0.33, 3)
 
         diff = player_score - game_avg_score
 
@@ -79,7 +71,6 @@ class GameRankingComputer:
             ranking_weight = 1.0 if player_ranking == 0 else game_avg_ranking/player_ranking
         else:
             ranking_weight = 1.0 if game_avg_ranking == 0 else player_ranking/game_avg_ranking
-        #ranking_weight = constrain(ranking_weight, 0.33, 3)
 
         delta_ranking = round(diff*(ranking_weight**2))
 
