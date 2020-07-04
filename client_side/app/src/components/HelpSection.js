@@ -45,14 +45,24 @@ class HelpSection extends React.Component {
                         <p className="help-section-paragraph"> <strong> Score measures how well a player did in a given game and is calculated as: </strong> </p>
                         {"\\[ score = { 3 * \\text{ } kills + { damage \\over 10 } - { self damage \\over 10 } } \\]"}
                         <p className="help-section-paragraph"> <strong> Δranking is the amount of change in a player's ranking after a given game and is calculated as: </strong> </p>
-                        {"\\[ Δranking = { (score_{player} - score_{game}) * \\text{ } \\Big({Ranking_{player} \\over Ranking_{game}}\\Big)^2} \\]"}
+                        {"\\[ Δranking = { (score_{player} - score_{game}) * \\text{ } rounds_{weight} * \\text{ } \\Big({Ranking_{player} \\over Ranking_{game}}\\Big)^2} \\]"}
                         <div style={{textAlign: 'center', marginTop: 10, marginBottom: 10}}>
                             <p className="help-section-paragraph">
                                 <strong>where:</strong>
                             </p>
                         </div>
-                        {"\\[ score_{game} = \\text{average score of all players in game} \\]"}
-                        {"\\[ ranking_{game} = \\text{average ranking of all players in game} \\]"}
+                        {"\\[ score_{game} = \\text{average score of all players in a given game} \\]"}
+                        {"\\[ ranking_{game} = \\text{average ranking of all players in a given game} \\]"}
+                        {"\\[ rounds_{weight} = { b ^ {(rounds_{player} - rounds_{game})} } \\]"}
+                        <div style={{textAlign: 'center', marginTop: 10, marginBottom: 10}}>
+                            <p className="help-section-paragraph">
+                                <strong>where:</strong>
+                            </p>
+                        </div>
+                        {"\\[ rounds_{player} = \\text{rounds played by the player in a given game} \\]"}
+                        {"\\[ rounds_{game} = \\text{average rounds played by all player in a given game} \\]"}
+                        {"\\[ b = { \\text{0.9 if } rounds_{player} > rounds_{game} \\text{ or 0.75 otherwise} } \\]"}
+
                     </DialogContent>
     
                     <Divider />
