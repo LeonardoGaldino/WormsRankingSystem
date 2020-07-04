@@ -12,6 +12,7 @@ private:
     DWORD nameAddress;
     HANDLE hProcess;
 public:
+    const static DWORD nameRoundsPlayedOffset = 0x0000004C;
     const static DWORD nameKillsOffset = 0x00000078;
     const static DWORD nameDamageOffset = 0x0000007C;
     const static DWORD nameSelfDamageOffset = 0x00000084;
@@ -19,6 +20,7 @@ public:
 
     string teamName;
     int nWorms;
+    int roundsPlayed;
     int kills;
     int totalDamage;
     int selfDamage;
@@ -28,6 +30,7 @@ public:
         this->nameAddress = nameAddress;
         this->nWorms = 3;
         this->teamName = string();
+        this->roundsPlayed = 0;
         this->kills = 0;
         this->totalDamage = 0;
         this->selfDamage = 0;
@@ -38,11 +41,12 @@ public:
     }
 
     void save(ofstream* file) {
-        *file << this->teamName << "|" << this->kills << "|" << this->totalDamage << "|" << this->selfDamage << endl;
+        *file << this->teamName << "|" << this->roundsPlayed << "|" << this->kills << "|" << this->totalDamage << "|" << this->selfDamage << endl;
     }
 
     // TODO: Check for errors.
     bool update() {
+        int tmpRoundsPlayed = 0;
         int tmpKills = 0;
         int tmpTotalDamage = 0;
         int tmpSelfDamage = 0;
@@ -65,9 +69,19 @@ public:
 
         for(int i = 0 ; i < this->nWorms ; ++i) {
             SIZE_T read;
+            int roundsPlayedBuffer;
             int killsBuffer;
             int damageBuffer;
             int selfDamageBuffer;
+
+            ReadProcessMemory(
+                this->hProcess,
+                (LPCVOID) (this->nameAddress + i*WormsTeam::wormOffset + WormsTeam::nameRoundsPlayedOffset),
+                &roundsPlayedBuffer,
+                sizeof(int),
+                &read
+            );
+            tmpRoundsPlayed += roundsPlayedBuffer;
 
             ReadProcessMemory(
                 this->hProcess,
@@ -98,10 +112,12 @@ public:
         }
 
         // Sinalize game has ended
-        if(tmpKills < this->kills || tmpTotalDamage < this->totalDamage || tmpSelfDamage < this->selfDamage) {
+        if(tmpRoundsPlayed < this->roundsPlayed || tmpKills < this->kills 
+            || tmpTotalDamage < this->totalDamage || tmpSelfDamage < this->selfDamage) {
             return true;
         }
 
+        this->roundsPlayed = tmpRoundsPlayed;
         this->kills = tmpKills;
         this->totalDamage = tmpTotalDamage;
         this->selfDamage = tmpSelfDamage;
