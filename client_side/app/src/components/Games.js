@@ -25,7 +25,7 @@ class Games extends React.Component {
       this.fetchData();
     }
   
-    async fetchData(resetBackground) {
+    async fetchData() {
       this.setState((state, _) => ({
         ...state,
         resultsBackground: '#f5f5f5'
@@ -75,10 +75,13 @@ class Games extends React.Component {
         <div>
           <IconButton
               onClick={() => {
-                this.setState((state, _) => ({
-                  ...state,
-                  currentPage: Math.max(0, state.currentPage - 1)
-                }), this.fetchData)
+                let newPage = Math.max(0, this.state.currentPage - 1);
+                if(newPage !== this.state.currentPage) {
+                  this.setState((state, _) => ({
+                    ...state,
+                    currentPage: newPage,
+                  }), this.fetchData);
+                }
               }}
               aria-label="previous page"
             >
@@ -91,10 +94,13 @@ class Games extends React.Component {
   
           <IconButton
             onClick={() => {
-              this.setState((state, _) => ({
-                ...state,
-                currentPage: Math.min(state.currentPage + 1, state.numPages - 1)
-              }), this.fetchData)
+              let newPage = Math.min(this.state.currentPage + 1, this.state.numPages - 1);
+              if(newPage !== this.state.currentPage) {
+                this.setState((state, _) => ({
+                  ...state,
+                  currentPage: newPage,
+                }), this.fetchData);
+              }
             }}
             aria-label="next page"
           >
