@@ -46,6 +46,10 @@ class GameRankingComputer:
         total_points = sum(map(lambda player_stat: self.compute_score(player_stat), self.game_stats))
         return round(total_points/len(self.game_stats))
 
+    def get_game_avg_rounds_played(self) -> int:
+        rounds_sum = sum(map(lambda player_stat: player_stat.rounds_played, self.game_stats))
+        return round(rounds_sum/len(self.game_stats))
+
     def get_score_ranking_updates(self):
         return list(map(lambda player_stat: 
             (player_stat, self.compute_score(player_stat), self.compute_delta_ranking(player_stat)), 
@@ -65,14 +69,18 @@ class GameRankingComputer:
         game_avg_score = self.get_game_avg_score()
         game_avg_ranking = self.db.get_game_avg_ranking(list(map(lambda player_stats: player_stats.id, self.game_stats)))
 
-        diff = player_score - game_avg_score
+        avg_rounds_played = self.get_game_avg_rounds_played()
+        rounds_base = 0.75 if stats.rounds_played < avg_rounds_played else 0.9
+        rounds_weight = rounds_base**(stats.rounds_played - avg_rounds_played)
 
+        diff = player_score - game_avg_score
         if diff > 0:
             ranking_weight = 1.0 if player_ranking == 0 else game_avg_ranking/player_ranking
         else:
             ranking_weight = 1.0 if game_avg_ranking == 0 else player_ranking/game_avg_ranking
+            rounds_weight = rounds_weight**-1 if stats.rounds_played < avg_rounds_played else rounds_weight
 
-        delta_ranking = round(diff*(ranking_weight**2))
+        delta_ranking = round(diff*(ranking_weight**2)*rounds_weight)
 
         # Prevent ranking from falling below 1
         if (player_ranking + delta_ranking) < 1:
