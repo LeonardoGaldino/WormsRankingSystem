@@ -302,11 +302,12 @@ class PostgresDB:
 
             player_entries.append({
                 'name': data[2].strip(),
-                'kills': data[3],
-                'damage': data[4],
-                'self_damage': data[5],
-                'score': data[6],
-                'ranking_delta': data[7],
+                'rounds_played': data[3],
+                'kills': data[4],
+                'damage': data[5],
+                'self_damage': data[6],
+                'score': data[7],
+                'ranking_delta': data[8],
             })
             
             game_by_ts[ts] = player_entries
