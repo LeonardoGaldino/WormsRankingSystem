@@ -18,6 +18,7 @@ games_query = """
         g.id,
         g.insertion_timestamp,
         p.name,
+        ps.rounds_played,
         ps.kills,
         ps.damage,
         ps.self_damage,
@@ -38,6 +39,7 @@ game_query = """
         g.id,
         g.insertion_timestamp,
         p.name,
+        ps.rounds_played,
         ps.kills,
         ps.damage,
         ps.self_damage,
@@ -58,6 +60,7 @@ player_stats_query = """
         ps.player_id,
         ps.game_id,
         p.name,
+        ps.rounds_played,
         ps.kills,
         ps.damage,
         ps.self_damage
@@ -112,11 +115,12 @@ insert_game_no_ts_stmt = "INSERT INTO game DEFAULT VALUES RETURNING ID;"
 insert_player_stats_stmt = """
     INSERT INTO player_stats (
         player_id, 
-        game_id, 
+        game_id,
+        rounds_played,
         kills, 
         damage, 
         self_damage) 
-        VALUES (%s, %s, %s, %s, %s) RETURNING ID;
+        VALUES (%s, %s, %s, %s, %s, %s) RETURNING ID;
 """
 
 insert_player_game_ranking_stmt = """
@@ -246,8 +250,8 @@ class PostgresDB:
         res = self.cursor.fetchone()
         return res[0], res[1]
 
-    def insert_player_stats(self, player_id: int, game_id, kills: int, damage: int, self_damage: int):
-        self.cursor.execute(insert_player_stats_stmt, (player_id, game_id, kills, damage, self_damage))
+    def insert_player_stats(self, player_id: int, game_id, rounds_played: int, kills: int, damage: int, self_damage: int):
+        self.cursor.execute(insert_player_stats_stmt, (player_id, game_id, rounds_played, kills, damage, self_damage))
 
     def insert_player_game_ranking(self, player_id: int, game_id: int, player_score: float, ranking_delta: float):
         self.cursor.execute(insert_player_game_ranking_stmt, (player_id, game_id, player_score, ranking_delta))
@@ -273,13 +277,14 @@ class PostgresDB:
     def parse_players_stats_response(self, raw_data):
         parsed_data = {}
         for data in raw_data:
-            player_id, game_id, player_name, kills, damage, self_damage = data
+            player_id, game_id, player_name, rounds_played, kills, damage, self_damage = data
             game_id = int(game_id)
 
             entries = parsed_data.get(game_id, [])
             entries.append({
                 'player_id': int(player_id),
                 'name': player_name.strip(),
+                'rounds_played': int(rounds_played),
                 'kills': int(kills),
                 'damage': int(damage),
                 'self_damage': int(self_damage),

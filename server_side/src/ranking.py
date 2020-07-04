@@ -5,16 +5,17 @@ from src.db import PostgresDB
 
 class PlayerStats:
 
-    def __init__(self, db: PostgresDB, name: str, kills: int, damage: int, self_damage: int, player_id: int = None):
+    def __init__(self, db: PostgresDB, name: str, rounds_played: int, kills: int, damage: int, self_damage: int, player_id: int = None):
         self.db = db
         self.id = self.db.get_player_data(name)[0] if player_id is None else player_id
         self.name = name
+        self.rounds_played = rounds_played
         self.kills = kills
         self.damage = damage
         self.self_damage = self_damage
 
     def save(self, game_id):
-        self.db.insert_player_stats(self.id, game_id, self.kills, self.damage, self.self_damage)
+        self.db.insert_player_stats(self.id, game_id, self.rounds_played, self.kills, self.damage, self.self_damage)
 
     @staticmethod
     def get_mapped_name(team_name: str):
@@ -28,11 +29,11 @@ class PlayerStats:
     def from_json(db: PostgresDB, json):
         team_name = json.get('team_name', '')
         name = PlayerStats.get_mapped_name(team_name)
-        return PlayerStats(db, name, json.get('kills', 0), json.get('damage', 0), json.get('self_damage', 0))
+        return PlayerStats(db, name, json.get('rounds_played', 0), json.get('kills', 0), json.get('damage', 0), json.get('self_damage', 0))
 
     def __repr__(self):
-        return 'PlayerStats({}, {}, {}, {}, {})'.format(
-            self.name, self.kills, self.damage, self.self_damage, self.id)
+        return 'PlayerStats({}, {}, {}, {}, {}, {})'.format(
+            self.name, self.rounds_played, self.kills, self.damage, self.self_damage, self.id)
 
 class GameRankingComputer:
 

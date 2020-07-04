@@ -90,7 +90,7 @@ class RecomputeRankingCommand(Command):
         for game_id in sorted(players_stats_by_game_id):
             players_stats_raw = players_stats_by_game_id[game_id]
             players_stats = list(map(
-                lambda player_stats: PlayerStats(db, player_stats['name'], player_stats['kills'],
+                lambda player_stats: PlayerStats(db, player_stats['name'], player_stats['rounds_played'], player_stats['kills'],
                     player_stats['damage'], player_stats['self_damage'], player_stats['player_id']),
                 players_stats_raw))
 
