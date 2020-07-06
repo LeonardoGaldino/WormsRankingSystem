@@ -47,7 +47,7 @@ public:
     }
 
     // TODO: Check for errors.
-    bool update() {
+    void update() {
         int tmpRoundsPlayed = 0;
         int tmpKills = 0;
         int tmpTotalDamage = 0;
@@ -64,9 +64,6 @@ public:
         teamName[16] = '\0';
 
         string teamNameStr = string(teamName);
-        if(!this->teamName.empty() && this->teamName != teamNameStr) {
-            return true;
-        }
         this->teamName = teamNameStr;
 
         for(int i = 0 ; i < this->nWorms ; ++i) {
@@ -113,18 +110,15 @@ public:
             tmpSelfDamage += selfDamageBuffer;
         }
 
-        // Sinalize game has ended
         if(tmpRoundsPlayed < this->roundsPlayed || tmpKills < this->kills 
             || tmpTotalDamage < this->totalDamage || tmpSelfDamage < this->selfDamage) {
-            return true;
+            return;
         }
 
         this->roundsPlayed = tmpRoundsPlayed;
         this->kills = tmpKills;
         this->totalDamage = tmpTotalDamage;
         this->selfDamage = tmpSelfDamage;
-
-        return false;
     }
 };
 
