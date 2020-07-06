@@ -66,14 +66,16 @@ int findPid(char* processName) {
     return pid;
 }
 
-int main() {
+HANDLE attachToProcess() {
     char processName[] = "WA.exe";
+    cout << "Trying to attach to " << processName << "..." << endl;
+
     int wormsPid = findPid(processName);
     if (wormsPid <= 0) {
         cout << "Couldn't find a PID for " << processName << ". Is it running?" << endl;
-        return 1;
+        return NULL;
     }
-    cout << "PID " << wormsPid << " found for process " << processName << "." << endl;
+    cout << "PID " << dec << wormsPid << " found for process " << processName << "." << endl;
 
     HANDLE hProcess = OpenProcess(
         PROCESS_ALL_ACCESS,
@@ -84,11 +86,22 @@ int main() {
     if (hProcess == NULL) {
         cout << "Could not attach to process. Error: " << GetLastError() << endl;
         cout << "Exiting..." << endl;
-        return 1;
+        return NULL;
     }
     cout << "Attached to " << processName << " (" << wormsPid << ")." << endl;
 
+    return hProcess;
+}
+
+int main() {
     while(true) {
+        HANDLE hProcess = attachToProcess();
+        if(hProcess == NULL){
+            cout << "Failed to attach, retring in 3s..." << endl;
+            Sleep(3000);
+            continue;
+        }
+        
         int nTeams;
         cout << "Type in number of teams:" << endl;
         cin >> nTeams;
