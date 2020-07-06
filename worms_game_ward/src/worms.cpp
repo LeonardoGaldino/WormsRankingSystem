@@ -1,10 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <windows.h>
-#include <processthreadsapi.h>
 #include <time.h>
 #include <vector>
 #include <cstring>
+
+#include "process.hpp"
 
 using namespace std;
 
@@ -174,16 +175,13 @@ public:
         ofstream* file = new ofstream(fileName.c_str());
 
         while(!processExited && !gameEnd) {
-            DWORD result; 
-            GetExitCodeProcess(hProcess, &result);
-            processExited |= (result != STILL_ACTIVE);
+            processExited |= !isProcessRunning(this->hProcess);
 
             for(int i = 0 ; !processExited && !gameEnd && i < this->nTeams ; ++i) {
                 gameEnd |= this->teams[i]->update();
             }
 
-            GetExitCodeProcess(hProcess, &result);
-            processExited |= (result != STILL_ACTIVE);
+            processExited |= !isProcessRunning(this->hProcess);
             
             if(!processExited && !gameEnd) {
                 file->seekp(0);

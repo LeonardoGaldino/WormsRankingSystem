@@ -3,6 +3,7 @@
 #include <tlhelp32.h>
 #include <Psapi.h>
 
+#include "process.hpp"
 #include "worms.cpp"
 
 using namespace std;
@@ -97,7 +98,7 @@ int main() {
     while(true) {
         HANDLE hProcess = attachToProcess();
         if(hProcess == NULL){
-            cout << "Failed to attach, retring in 3s..." << endl;
+            cout << "Failed to attach, retrying in 3s..." << endl;
             Sleep(3000);
             continue;
         }
@@ -107,6 +108,11 @@ int main() {
         cin >> nTeams;
         cout << "Number of teams: " << nTeams << endl;
         cout << "Started watching current game. " << endl;
+
+        if(!isProcessRunning(hProcess)) {
+            cout << "Process exited before typing number teams." << endl;
+            continue;
+        }
 
         DWORD base = findModuleBaseAddress(hProcess);
         cout << "WA.exe module address: " << hex << base << endl;
