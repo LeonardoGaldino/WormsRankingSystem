@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <windows.h>
+#include <processthreadsapi.h>
 #include <time.h>
 #include <vector>
 #include <cstring>
@@ -166,16 +167,25 @@ public:
 
     void watchGame() {
         bool gameEnd = false;
+        bool processExited = false;
 
         long int start = (long int) time(NULL);
         string fileName = "game_data_" + to_string(start);
         ofstream* file = new ofstream(fileName.c_str());
 
-        while(!gameEnd) {
-            for(int i = 0 ; !gameEnd && i < this->nTeams ; ++i) {
+        while(!processExited && !gameEnd) {
+            DWORD result; 
+            GetExitCodeProcess(hProcess, &result);
+            processExited |= (result != STILL_ACTIVE);
+
+            for(int i = 0 ; !processExited && !gameEnd && i < this->nTeams ; ++i) {
                 gameEnd |= this->teams[i]->update();
             }
-            if(!gameEnd) {
+
+            GetExitCodeProcess(hProcess, &result);
+            processExited |= (result != STILL_ACTIVE);
+            
+            if(!processExited && !gameEnd) {
                 file->seekp(0);
                 for(int i = 0 ; i < this->nTeams ; ++i) {
                     this->teams[i]->save(file);
@@ -190,7 +200,11 @@ public:
 
         this->printEndGameTime(&end);
 
-        string command = "start python src/save_game_data.py " + fileName;
-        system(command.c_str());
+        if(!processExited) {
+            string command = "start python src/save_game_data.py " + fileName;
+            system(command.c_str());
+        } else {
+            cout << "Process exited without detecting end game. Not sending data to server." << endl;
+        }
     }
 };
