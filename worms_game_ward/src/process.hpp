@@ -1,4 +1,4 @@
-int isProcessRunning(HANDLE hProcess);
+bool isProcessRunning(HANDLE hProcess);
 
 DWORD findModuleBaseAddress(HANDLE hProcess);
 

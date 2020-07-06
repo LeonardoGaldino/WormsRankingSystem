@@ -172,7 +172,7 @@ public:
     }
 
     bool isGameRunning() {
-        DWORD buffer;
+        DWORD buffer = 0x0;
         ReadProcessMemory(
             this->hProcess,
             (LPCVOID) (this->moduleBaseAddress + WormsGame::pointerPathOffsets[0]),
@@ -188,7 +188,7 @@ public:
         if(!this->isGameRunning() || !isProcessRunning(this->hProcess)) {
             return;
         }
-        
+
         int i = 0;
         DWORD team1NameAddress = this->getTeam1NameAddress();
 
@@ -239,6 +239,9 @@ public:
             cout << "Game started" << endl;
             Sleep(10*1000); // Wait 10s for game initialization
             this->setupTeams();
+        } else {
+            cout << "Process exited before game started." << endl;
+            return;
         }
 
         long int start = (long int) time(NULL);
@@ -266,11 +269,7 @@ public:
 
         this->printEndGameTime(&end);
 
-        if(isProcessRunning(this->hProcess)) {
-            string command = "start python src/save_game_data.py " + fileName;
-            system(command.c_str());
-        } else {
-            cout << "Process exited without detecting end game. Not sending data to server." << endl;
-        }
+        string command = "start python src/save_game_data.py " + fileName;
+        system(command.c_str());
     }
 };
