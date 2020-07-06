@@ -132,20 +132,35 @@ class WormsGame {
 private:
     HANDLE hProcess;
     DWORD moduleBaseAddress;
-    DWORD baseAddress;
     int nTeams = 0;
     int watchStall;
     vector<WormsTeam*> teams;
-public:
-    const static DWORD levelOffset = 0x53159D;
-    const static DWORD teamOffset = 0x0000051C;
-    const static DWORD player1NameOffset = 0x000045BC;
 
-    WormsGame(HANDLE hProcess, DWORD moduleBaseAddress, DWORD baseAddress, int watchStall) {
+    DWORD getTeam1NameAddress() {
+        DWORD base = this->moduleBaseAddress;
+        int ns = sizeof(WormsGame::pointerPathOffsets)/sizeof(DWORD);
+
+        for(int i = 0 ; i < ns - 1 ; ++i) {
+            ReadProcessMemory(
+                hProcess,
+                (LPCVOID) (base + WormsGame::pointerPathOffsets[i]),
+                &base,
+                sizeof(DWORD),
+                NULL
+            );
+        }
+
+        return base + WormsGame::pointerPathOffsets[ns-1];
+    }
+
+public:
+    constexpr static DWORD pointerPathOffsets[] = {0x360D8C, 0x80, 0x4BC, 0x4, 0x45BC};
+    const static DWORD teamOffset = 0x0000051C;
+
+    WormsGame(HANDLE hProcess, int watchStall) {
         this->hProcess = hProcess;
-        this->moduleBaseAddress = moduleBaseAddress;
-        this->baseAddress = baseAddress;
         this->watchStall = watchStall;
+        this->moduleBaseAddress = findModuleBaseAddress(hProcess);
     }
 
     ~WormsGame() {
@@ -153,30 +168,32 @@ public:
         for(int i = 0 ; i < this->nTeams ; ++i) {
             delete this->teams[i];
         }
-        this->baseAddress = 0x0;
+        this->moduleBaseAddress = 0x0;
     }
 
     bool isGameRunning() {
-        char level[6];
+        DWORD buffer;
         ReadProcessMemory(
             this->hProcess,
-            (LPCVOID) (this->moduleBaseAddress + WormsGame::levelOffset),
-            level,
-            sizeof(level)*sizeof(char),
+            (LPCVOID) (this->moduleBaseAddress + WormsGame::pointerPathOffsets[0]),
+            &buffer,
+            sizeof(buffer),
             NULL
         );
-        level[5] = '\0';
-        return string(level) == "Level";
+        
+        return buffer != 0x0;
     }
 
-    void countTeams() {
-        if(!this->isGameRunning()) {
+    void setupTeams() {
+        if(!this->isGameRunning() || !isProcessRunning(this->hProcess)) {
             return;
         }
-
+        
         int i = 0;
+        DWORD team1NameAddress = this->getTeam1NameAddress();
+
         do {
-            DWORD teamNameAddress = this->baseAddress + WormsGame::player1NameOffset + i*WormsGame::teamOffset;
+            DWORD teamNameAddress = team1NameAddress + i*WormsGame::teamOffset;
             char teamName[17];
             ReadProcessMemory(
                 this->hProcess,
@@ -211,33 +228,30 @@ public:
     }
 
     void watchGame() {
-        bool gameEnd = false;
-        bool processExited = false;
+        this->moduleBaseAddress = findModuleBaseAddress(hProcess);
+        cout << "WA.exe module address: " << hex << this->moduleBaseAddress << endl;
 
-        while(!processExited && !this->isGameRunning()) {
+        while(isProcessRunning(this->hProcess) && !this->isGameRunning()) {
             cout << "Waiting for game to start..." << endl;
-            processExited |= !isProcessRunning(this->hProcess);
             Sleep(this->watchStall);
         }
-        if(!processExited) {
-            this->countTeams();
+        if(isProcessRunning(this->hProcess)) {
             cout << "Game started" << endl;
+            Sleep(10*1000); // Wait 10s for game initialization
+            this->setupTeams();
         }
 
         long int start = (long int) time(NULL);
         string fileName = "game_data_" + to_string(start);
         ofstream* file = new ofstream(fileName.c_str());
 
-        while(!processExited && !gameEnd) {
-            processExited |= !isProcessRunning(this->hProcess);
-
-            for(int i = 0 ; !processExited && !gameEnd && i < this->nTeams ; ++i) {
-                gameEnd |= this->teams[i]->update();
+        while(isProcessRunning(this->hProcess) && this->isGameRunning()) {
+            int i = 0;
+            for(; isProcessRunning(this->hProcess) && this->isGameRunning() && i < this->nTeams ; ++i) {
+                this->teams[i]->update();
             }
 
-            processExited |= !isProcessRunning(this->hProcess);
-            
-            if(!processExited && !gameEnd) {
+            if(i == this->nTeams) {
                 file->seekp(0);
                 for(int i = 0 ; i < this->nTeams ; ++i) {
                     this->teams[i]->save(file);
@@ -252,7 +266,7 @@ public:
 
         this->printEndGameTime(&end);
 
-        if(!processExited) {
+        if(isProcessRunning(this->hProcess)) {
             string command = "start python src/save_game_data.py " + fileName;
             system(command.c_str());
         } else {
