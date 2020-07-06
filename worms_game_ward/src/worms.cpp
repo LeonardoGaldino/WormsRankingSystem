@@ -147,35 +147,11 @@ private:
         return base + WormsGame::pointerPathOffsets[ns-1];
     }
 
-public:
-    constexpr static DWORD pointerPathOffsets[] = {0x360D8C, 0x80, 0x4BC, 0x4, 0x45BC};
-    const static DWORD teamOffset = 0x0000051C;
-
-    WormsGame(HANDLE hProcess, int watchStall) {
-        this->hProcess = hProcess;
-        this->watchStall = watchStall;
-        this->moduleBaseAddress = findModuleBaseAddress(hProcess);
-    }
-
-    ~WormsGame() {
-        cout << "Deleting Game" << endl;
-        for(int i = 0 ; i < this->nTeams ; ++i) {
-            delete this->teams[i];
-        }
-        this->moduleBaseAddress = 0x0;
-    }
-
-    bool isGameRunning() {
-        DWORD buffer = 0x0;
-        ReadProcessMemory(
-            this->hProcess,
-            (LPCVOID) (this->moduleBaseAddress + WormsGame::pointerPathOffsets[0]),
-            &buffer,
-            sizeof(buffer),
-            NULL
-        );
-        
-        return buffer != 0x0;
+    void printEndGameTime(time_t* endTs) {
+        tm* ptm = localtime(endTs);
+        char buffer[32];
+        strftime(buffer, 32, "%d/%m/%Y %H:%M:%S", ptm);  
+        cout << "Game ended at: " << string(buffer) << endl; 
     }
 
     void setupTeams() {
@@ -214,11 +190,35 @@ public:
         cout << "Detected " << dec << i << " teams." << endl;
     }
 
-    void printEndGameTime(time_t* endTs) {
-        tm* ptm = localtime(endTs);
-        char buffer[32];
-        strftime(buffer, 32, "%d/%m/%Y %H:%M:%S", ptm);  
-        cout << "Game ended at: " << string(buffer) << endl; 
+public:
+    constexpr static DWORD pointerPathOffsets[] = {0x360D8C, 0x80, 0x4BC, 0x4, 0x45BC};
+    const static DWORD teamOffset = 0x0000051C;
+
+    WormsGame(HANDLE hProcess, int watchStall) {
+        this->hProcess = hProcess;
+        this->watchStall = watchStall;
+        this->moduleBaseAddress = findModuleBaseAddress(hProcess);
+    }
+
+    ~WormsGame() {
+        cout << "Deleting Game" << endl;
+        for(int i = 0 ; i < this->nTeams ; ++i) {
+            delete this->teams[i];
+        }
+        this->moduleBaseAddress = 0x0;
+    }
+
+    bool isGameRunning() {
+        DWORD buffer = 0x0;
+        ReadProcessMemory(
+            this->hProcess,
+            (LPCVOID) (this->moduleBaseAddress + WormsGame::pointerPathOffsets[0]),
+            &buffer,
+            sizeof(buffer),
+            NULL
+        );
+        
+        return buffer != 0x0;
     }
 
     void watchGame() {
