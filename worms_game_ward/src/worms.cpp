@@ -131,24 +131,21 @@ public:
 class WormsGame {
 private:
     HANDLE hProcess;
+    DWORD moduleBaseAddress;
     DWORD baseAddress;
-    int nTeams;
+    int nTeams = 0;
     int watchStall;
     vector<WormsTeam*> teams;
 public:
+    const static DWORD levelOffset = 0x53159D;
     const static DWORD teamOffset = 0x0000051C;
     const static DWORD player1NameOffset = 0x000045BC;
 
-    WormsGame(HANDLE hProcess, DWORD baseAddress, int nTeams, int watchStall) {
+    WormsGame(HANDLE hProcess, DWORD moduleBaseAddress, DWORD baseAddress, int watchStall) {
         this->hProcess = hProcess;
+        this->moduleBaseAddress = moduleBaseAddress;
         this->baseAddress = baseAddress;
-        this->nTeams = nTeams;
         this->watchStall = watchStall;
-        for(int i = 0 ; i < nTeams ; ++i) {
-            DWORD teamNameAddress = this->baseAddress + WormsGame::player1NameOffset + i*WormsGame::teamOffset;
-            WormsTeam* team = new WormsTeam(hProcess, teamNameAddress);
-            this->teams.push_back(team);
-        }
     }
 
     ~WormsGame() {
@@ -157,6 +154,53 @@ public:
             delete this->teams[i];
         }
         this->baseAddress = 0x0;
+    }
+
+    bool isGameRunning() {
+        char level[6];
+        ReadProcessMemory(
+            this->hProcess,
+            (LPCVOID) (this->moduleBaseAddress + WormsGame::levelOffset),
+            level,
+            sizeof(level)*sizeof(char),
+            NULL
+        );
+        level[5] = '\0';
+        return string(level) == "Level";
+    }
+
+    void countTeams() {
+        if(!this->isGameRunning()) {
+            return;
+        }
+
+        int i = 0;
+        do {
+            DWORD teamNameAddress = this->baseAddress + WormsGame::player1NameOffset + i*WormsGame::teamOffset;
+            char teamName[17];
+            ReadProcessMemory(
+                this->hProcess,
+                (LPCVOID) teamNameAddress,
+                teamName,
+                sizeof(teamName)*sizeof(char),
+                NULL
+            );
+
+            bool nonZeroChar = false;
+            for(int j = 0 ; j < 16 ; ++j) {
+                nonZeroChar |= ((int) teamName[j]) != 0;
+            }
+
+            if(nonZeroChar) {
+                WormsTeam* team = new WormsTeam(hProcess, teamNameAddress);
+                this->teams.push_back(team);
+                ++i;
+            } else {
+                break;
+            }
+        } while(i < 6); // Max number of teams
+        this->nTeams = i;
+        cout << "Detected " << dec << i << " teams." << endl;
     }
 
     void printEndGameTime(time_t* endTs) {
@@ -169,6 +213,16 @@ public:
     void watchGame() {
         bool gameEnd = false;
         bool processExited = false;
+
+        while(!processExited && !this->isGameRunning()) {
+            cout << "Waiting for game to start..." << endl;
+            processExited |= !isProcessRunning(this->hProcess);
+            Sleep(this->watchStall);
+        }
+        if(!processExited) {
+            this->countTeams();
+            cout << "Game started" << endl;
+        }
 
         long int start = (long int) time(NULL);
         string fileName = "game_data_" + to_string(start);

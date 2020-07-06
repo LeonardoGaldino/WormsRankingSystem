@@ -14,11 +14,6 @@ int main() {
             Sleep(3000);
             continue;
         }
-        
-        int nTeams;
-        cout << "Type in number of teams:" << endl;
-        cin >> nTeams;
-        cout << "Number of teams: " << nTeams << endl;
         cout << "Started watching current game. " << endl;
 
         if(!isProcessRunning(hProcess)) {
@@ -26,7 +21,8 @@ int main() {
             continue;
         }
 
-        DWORD base = findModuleBaseAddress(hProcess);
+        DWORD moduleBaseAddress = findModuleBaseAddress(hProcess);
+        DWORD base = moduleBaseAddress;
         cout << "WA.exe module address: " << hex << base << endl;
         DWORD offs[] = {0x360D8C, 0x80, 0x4BC, 0x4};
         int ns = sizeof(offs)/sizeof(DWORD);
@@ -43,7 +39,7 @@ int main() {
             base = buffer;
         }
 
-        WormsGame game = WormsGame(hProcess, base, nTeams, 1000);
+        WormsGame game = WormsGame(hProcess, moduleBaseAddress, base, 1000);
 
         game.watchGame();
     }
