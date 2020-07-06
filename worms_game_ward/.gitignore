@@ -1,3 +1,4 @@
 *.exe
 game_data_*
 py_err
+.vscode
