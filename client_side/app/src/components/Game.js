@@ -30,6 +30,7 @@ class Game extends React.Component {
             </TableRow>
             <TableRow>
               <TableCell align="left"><strong>Player</strong></TableCell>
+              <TableCell align="center"><strong>Rounds played</strong></TableCell>
               <TableCell align="center"><strong>Kills</strong></TableCell>
               <TableCell align="center"><strong>Damage</strong></TableCell>
               <TableCell align="center"><strong>Self damage</strong></TableCell>
@@ -46,6 +47,7 @@ class Game extends React.Component {
                     label={entry.name}
                   />  
                 </TableCell>
+                <TableCell align="center" component="td" scope="entry">{entry.rounds_played !== 0 ? entry.rounds_played : '-'}</TableCell>
                 <TableCell align="center" component="td" scope="entry">{entry.kills}</TableCell>
                 <TableCell align="center" component="td" scope="entry">{entry.damage}</TableCell>
                 <TableCell align="center" component="td" scope="entry">{entry.self_damage}</TableCell>
