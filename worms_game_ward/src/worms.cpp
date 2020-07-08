@@ -47,7 +47,7 @@ public:
     }
 
     // TODO: Check for errors.
-    void update() {
+    bool update() {
         int tmpRoundsPlayed = 0;
         int tmpKills = 0;
         int tmpTotalDamage = 0;
@@ -64,6 +64,10 @@ public:
         teamName[16] = '\0';
 
         string teamNameStr = string(teamName);
+        if(!this->teamName.empty() && teamNameStr != this->teamName) {
+            // Sinalize game has ended
+            return true;
+        }
         this->teamName = teamNameStr;
 
         for(int i = 0 ; i < this->nWorms ; ++i) {
@@ -110,15 +114,18 @@ public:
             tmpSelfDamage += selfDamageBuffer;
         }
 
+        // Sinalize game has ended
         if(tmpRoundsPlayed < this->roundsPlayed || tmpKills < this->kills 
             || tmpTotalDamage < this->totalDamage || tmpSelfDamage < this->selfDamage) {
-            return;
+            return true;
         }
 
         this->roundsPlayed = tmpRoundsPlayed;
         this->kills = tmpKills;
         this->totalDamage = tmpTotalDamage;
         this->selfDamage = tmpSelfDamage;
+        
+        return false;
     }
 };
 
@@ -242,13 +249,14 @@ public:
         string fileName = "game_data_" + to_string(start);
         ofstream* file = new ofstream(fileName.c_str());
 
-        while(isProcessRunning(this->hProcess) && this->isGameRunning()) {
+        bool gameEndSignal = false;
+        while(!gameEndSignal && isProcessRunning(this->hProcess) && this->isGameRunning()) {
             int i = 0;
-            for(; isProcessRunning(this->hProcess) && this->isGameRunning() && i < this->nTeams ; ++i) {
-                this->teams[i]->update();
+            for(; !gameEndSignal && isProcessRunning(this->hProcess) && this->isGameRunning() && i < this->nTeams ; ++i) {
+                gameEndSignal |= this->teams[i]->update();
             }
 
-            if(i == this->nTeams) {
+            if(!gameEndSignal && i == this->nTeams) {
                 file->seekp(0);
                 for(int i = 0 ; i < this->nTeams ; ++i) {
                     this->teams[i]->save(file);
