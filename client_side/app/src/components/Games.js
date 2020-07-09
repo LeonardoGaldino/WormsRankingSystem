@@ -1,7 +1,9 @@
 import React from 'react';
 import MenuItem from '@material-ui/core/MenuItem';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
+import LastPage from '@material-ui/icons/LastPage';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
+import FirstPage from '@material-ui/icons/FirstPage';
 import IconButton from '@material-ui/core/IconButton';
 import Paper from '@material-ui/core/Paper';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -49,7 +51,7 @@ class Games extends React.Component {
     render() {
       return <Paper style={{marginTop: 30, paddingBottom: 20, backgroundColor: '#f5f5f5'}} elevation={3}>
         <h1 style={{paddingTop: 15, display: 'block'}}>Games</h1>
-        <div>
+        <div style={{marginBottom: 12}}>
           <InputLabel id="demo-simple-select-label">Games per page</InputLabel>
           <Select
             style={{width: 45}}
@@ -74,6 +76,22 @@ class Games extends React.Component {
   
         <div>
           <IconButton
+              style={{padding: '0 0 0 0'}}
+              onClick={() => {
+                if(this.state.currentPage !== 0) {
+                  this.setState((state, _) => ({
+                    ...state,
+                    currentPage: 0,
+                  }), this.fetchData);
+                }
+              }}
+              aria-label="first page"
+            >
+              <FirstPage />
+          </IconButton>
+
+          <IconButton
+              style={{padding: '0 0 0 0'}}
               onClick={() => {
                 let newPage = Math.max(0, this.state.currentPage - 1);
                 if(newPage !== this.state.currentPage) {
@@ -93,6 +111,7 @@ class Games extends React.Component {
           </span>
   
           <IconButton
+            style={{padding: '0 0 0 0'}}
             onClick={() => {
               let newPage = Math.min(this.state.currentPage + 1, this.state.numPages - 1);
               if(newPage !== this.state.currentPage) {
@@ -105,6 +124,21 @@ class Games extends React.Component {
             aria-label="next page"
           >
             <KeyboardArrowRight />
+          </IconButton>
+
+          <IconButton
+            style={{padding: '0 0 0 0'}}
+            onClick={() => {
+              if(this.state.currentPage !== this.state.numPages - 1) {
+                this.setState((state, _) => ({
+                  ...state,
+                  currentPage: state.numPages - 1,
+                }), this.fetchData);
+              }
+            }}
+            aria-label="last page"
+          >
+            <LastPage />
           </IconButton>
         </div>
   
