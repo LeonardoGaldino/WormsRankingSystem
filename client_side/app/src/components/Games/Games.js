@@ -10,7 +10,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 
 import Game from './Game.js'
-import {API_ENDPOINT} from '../env.js';
+import {API_ENDPOINT} from '../../env.js';
 
 class Games extends React.Component {
 

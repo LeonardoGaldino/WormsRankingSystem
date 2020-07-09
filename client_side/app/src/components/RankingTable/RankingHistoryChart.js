@@ -12,8 +12,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Dialog from '@material-ui/core/Dialog';
 import Divider from '@material-ui/core/Divider';
 
-import {API_ENDPOINT} from '../env.js';
-import Game from './Game.js'
+import {API_ENDPOINT} from '../../env.js';
+import Game from '../Games/Game.js'
 
 class RankingHistoryChart extends React.Component {
 
@@ -228,7 +228,7 @@ class RankingHistoryChart extends React.Component {
                         
                         <DialogActions>
                             <Button onClick={() => this.changeGame(false)} color="primary" autoFocus>
-                               <NavigateBefore></NavigateBefore> Previous
+                            <NavigateBefore></NavigateBefore> Previous
                             </Button>
                             <Button onClick={() => this.changeGame(true)} color="primary" autoFocus>
                                 Next <NavigateNext></NavigateNext>

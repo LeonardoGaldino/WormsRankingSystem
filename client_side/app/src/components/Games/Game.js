@@ -12,7 +12,7 @@ import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import dayjs from 'dayjs';
 
-import {API_ENDPOINT} from '../env';
+import {API_ENDPOINT} from '../../env';
 
 class Game extends React.Component {
     render() {
