@@ -132,6 +132,10 @@ class RankingHistoryChart extends React.Component {
             },
             options: {
                 responsive: true,
+                animation: {
+                    // If chart already rendered, don't animate again
+                    duration: this.renderedChart === null ? 500 : 0,
+                },
                 scales: {
                     xAxes: [{
                         type: 'time',
