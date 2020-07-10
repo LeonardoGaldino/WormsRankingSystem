@@ -69,10 +69,18 @@ class GameModal extends React.Component {
                 <Divider />
                 
                 <DialogActions>
-                    <Button onClick={() => this.props.changeSelectedGameCallback(false)} color="primary" autoFocus>
+                    <Button onClick={() => {
+                            this.setState({
+                                gameData: null,
+                            }, () => this.props.changeSelectedGameCallback(false));
+                        }} color="primary" autoFocus>
                     <NavigateBefore></NavigateBefore> Previous
                     </Button>
-                    <Button onClick={() => this.props.changeSelectedGameCallback(true)} color="primary" autoFocus>
+                    <Button onClick={() => {
+                            this.setState({
+                                gameData: null,
+                            }, () => this.props.changeSelectedGameCallback(true));
+                        }} color="primary" autoFocus>
                         Next <NavigateNext></NavigateNext>
                     </Button>
                     <Button onClick={this.props.closeModalCallback} color="primary" autoFocus>
