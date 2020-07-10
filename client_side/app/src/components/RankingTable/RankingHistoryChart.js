@@ -16,11 +16,10 @@ class RankingHistoryChart extends React.Component {
     renderedChart = null;
 
     closeModal() {
-        this.renderedChart = null;
-        this.setState({
+        this.setState((state,_) => ({
+            ...state,
             selectedGame: null,
-            processedRankingData: null,
-        });
+        }));
     }
 
     changeSelectedGame(changeForward) {
