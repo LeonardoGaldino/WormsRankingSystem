@@ -35,33 +35,6 @@ class RankingHistoryChart extends React.Component {
         }
     }
 
-    /*renderGame(gameData) {
-        this.setState((state, _) => ({
-            ...state,
-            gameData: null,
-            selectedGame: gameData,
-        }), this.fetchGameData);
-    }*/
-
-    /*changeGame(forward) {
-        let currentIndex = this.state.selectedGame.index;
-
-        let newIndex;
-        if(forward) {
-            newIndex = Math.min(currentIndex+1, this.state.rankingData.processed.length-1);
-        } else {
-            // index 0 is not a game (ranking start with 1500 with no games played)
-            newIndex = Math.max(1, currentIndex-1);
-        }
-
-        if(newIndex !== this.state.selectedGame.index) {
-            this.renderGame({
-                id: this.state.rankingData.processed[newIndex].gameId,
-                index: newIndex,
-            });
-        }
-    }*/
-
     componentDidUpdate() {
         // No canvas rendered: no work to be done
         // ProcessedRankingData not null means chart was already rendered
