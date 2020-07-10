@@ -81,7 +81,7 @@ class RankingTable extends React.Component {
               </Table>
               <RankingModal
                   onModalClose={this.changeSelectedPlayer.bind(this)}
-                  name={this.state.selectedPlayerName}
+                  playerName={this.state.selectedPlayerName}
                 >
               </RankingModal>
         </Paper>
