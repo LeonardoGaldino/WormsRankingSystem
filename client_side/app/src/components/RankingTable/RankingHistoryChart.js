@@ -1,6 +1,8 @@
 import React from 'react'
 import Chart from 'chart.js'
 import CachedSharpIcon from '@material-ui/icons/CachedSharp';
+import Typography from '@material-ui/core/Typography';
+import Slider from '@material-ui/core/Slider';
 
 import GameModal from '../Games/GameModal.js';
 
@@ -9,6 +11,7 @@ class RankingHistoryChart extends React.Component {
     state = {
         selectedGame: null,
         processedRankingData: null,
+        gamesRange: [0, 0],
     }
 
     closeModal() {
@@ -35,21 +38,9 @@ class RankingHistoryChart extends React.Component {
         }
     }
 
-    componentDidUpdate() {
-        // No canvas rendered: no work to be done
-        // ProcessedRankingData not null means chart was already rendered
-        if(this.props.rankingData === null || this.state.processedRankingData !== null) {
-            return;
-        }
-
+    processRankingData() {
         let rankingData = this.props.rankingData;
-
-        let ctx = document.getElementById('ranking-history-chart');
-        ctx.style.backgroundColor = 'rgba(30,30,30,1)';
-
         let currentRanking = rankingData.current_ranking;
-        let lowestRanking = currentRanking;
-        let highestRanking = currentRanking;
 
         let rankings = new Array(rankingData.history.length + 1);
         rankings[rankingData.history.length] = {
@@ -70,15 +61,45 @@ class RankingHistoryChart extends React.Component {
 
             currentRanking -= rankingData.history[idx].delta_ranking;
 
-            highestRanking = Math.max(highestRanking, currentRanking);
-            lowestRanking = Math.min(lowestRanking, currentRanking);
-
             rankings[idx] = {
                 gameId: gameId,
                 x: gameDate,
                 y: currentRanking,
             }
         }
+
+        this.setState((state, _) => ({
+            ...state,
+            processedRankingData: rankings,
+        }));
+    }
+
+    componentDidUpdate() {
+        // No canvas rendered: no work to be done
+        if(this.props.rankingData === null) {
+            return;
+        }
+        if(this.state.processedRankingData === null) {
+            this.processRankingData();
+            this.setState((state, props) => ({
+                ...state,
+                gamesRange: [0, props.rankingData.history.length],
+            }));
+            return;
+        }
+
+        let processedRankingData = this.state.processedRankingData;
+        let rankingDataWindow = processedRankingData.slice(this.state.gamesRange[0], this.state.gamesRange[1]+1);
+
+        let lowestRanking = rankingDataWindow.length > 0 ? rankingDataWindow[0].y : 1500;
+        let highestRanking = rankingDataWindow.length > 0 ? rankingDataWindow[0].y : 1500;
+        for(const rankingPoint in rankingDataWindow) {
+            lowestRanking = Math.min(lowestRanking, rankingPoint.y);
+            highestRanking = Math.max(highestRanking, rankingPoint.y);
+        }
+
+        let ctx = document.getElementById('ranking-history-chart');
+        ctx.style.backgroundColor = 'rgba(30,30,30,1)';
 
         let getBorderColor = (ranking) => {
             if(ranking.y === highestRanking) {
@@ -96,10 +117,10 @@ class RankingHistoryChart extends React.Component {
                 datasets: [{
                     fill: false,
                     label: 'Ranking',
-                    data: rankings,
+                    data: rankingDataWindow,
                     backgroundColor: 'rgba(220,220,220,1)',
                     borderColor: 'rgba(236,245,66,1)',
-                    pointBorderColor: rankings.map(getBorderColor),
+                    pointBorderColor: rankingDataWindow.map(getBorderColor),
                     borderWidth: .8,
                 }]
             },
@@ -124,24 +145,21 @@ class RankingHistoryChart extends React.Component {
                 },
                 onClick: (_, elems) => {
                     if(elems.length > 0) {
-                        let index = elems[0]._index;
+                        let index = elems[0]._index + this.state.gamesRange[0];
                         if(index > 0) {
-                            this.setState({
+                            this.setState((state,_) => ({
                                 selectedGame: {
                                     index: index,
-                                    id: rankings[index].gameId,
+                                    id: state.processedRankingData[index].gameId,
                                 },
-                            });
+                            }));
                         }
                     }
                 }
             }
         });
 
-        this.setState((state, _) => ({
-            ...state,
-            processedRankingData: rankings,
-        }));
+
     }
 
     render(){
@@ -153,6 +171,25 @@ class RankingHistoryChart extends React.Component {
                     closeModalCallback={this.closeModal.bind(this)}
                 >
                 </GameModal>
+                <div style={{marginTop: 10, textAlign: 'center'}}>
+                    <Typography id="range-slider" gutterBottom>
+                        Games date range
+                    </Typography>
+                    <Slider
+                        value={this.state.gamesRange}
+                        max={this.props.rankingData.history.length}
+                        onChange={(_, range) => {
+                                this.setState((state, _) => ({
+                                    ...state,
+                                    gamesRange: range,
+                                }));
+                            }
+                        }
+                        valueLabelDisplay="auto"
+                        aria-labelledby="range-slider"
+                        getAriaValueText={() => 'kappa'}
+                    />
+                </div>
             </div>
         } else {
             return <div style={{textAlign: 'center'}}>
