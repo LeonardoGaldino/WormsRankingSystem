@@ -136,6 +136,7 @@ private:
     int nTeams = 0;
     int watchStall;
     vector<WormsTeam*> teams;
+    bool* shouldUploadData;
 
     DWORD getTeam1NameAddress() {
         DWORD base = this->moduleBaseAddress;
@@ -201,8 +202,9 @@ public:
     constexpr static DWORD pointerPathOffsets[] = {0x360D8C, 0x80, 0x4BC, 0x4, 0x45BC};
     const static DWORD teamOffset = 0x0000051C;
 
-    WormsGame(HANDLE hProcess, int watchStall) {
+    WormsGame(HANDLE hProcess, bool* shouldUploadData, int watchStall) {
         this->hProcess = hProcess;
+        this->shouldUploadData = shouldUploadData;
         this->watchStall = watchStall;
         this->moduleBaseAddress = findModuleBaseAddress(hProcess);
     }
@@ -233,7 +235,7 @@ public:
         cout << "WA.exe module address: " << hex << this->moduleBaseAddress << endl;
 
         while(isProcessRunning(this->hProcess) && !this->isGameRunning()) {
-            cout << "Waiting for game to start..." << endl;
+            cout << "Waiting for game to start... (ShouldUploadData flag: " << *(this->shouldUploadData) << ")" << endl;
             Sleep(this->watchStall);
         }
         if(isProcessRunning(this->hProcess)) {
@@ -263,6 +265,7 @@ public:
                 }
                 Sleep(this->watchStall);
             }
+            cout << "Game running... (ShouldUploadData flag: " << *(this->shouldUploadData) << ")" << endl;
         }
 
         time_t end = time(NULL);
@@ -270,8 +273,12 @@ public:
         file->close();
 
         this->printEndGameTime(&end);
-
-        string command = "start python src/save_game_data.py " + fileName;
-        system(command.c_str());
+        if(*(this->shouldUploadData)) {
+            cout << "Sending data to server..." << endl;
+            string command = "start python src/save_game_data.py " + fileName;
+            system(command.c_str());
+        } else {
+            cout << "Not sending data to server because flag is off: " << *(this->shouldUploadData) << endl;
+        }
     }
 };
