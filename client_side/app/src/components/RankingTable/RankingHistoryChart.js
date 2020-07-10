@@ -13,8 +13,10 @@ class RankingHistoryChart extends React.Component {
         processedRankingData: null,
         gamesRange: [0, 0],
     }
+    renderedChart = null;
 
     closeModal() {
+        this.renderedChart = null;
         this.setState({
             selectedGame: null,
             processedRankingData: null,
@@ -111,7 +113,11 @@ class RankingHistoryChart extends React.Component {
             }
         }
 
-        new Chart(ctx, {
+        if(this.renderedChart !== null) {
+            this.renderedChart.destroy();
+        }
+        
+        this.renderedChart = new Chart(ctx, {
             type: 'line',
             data: {
                 datasets: [{
