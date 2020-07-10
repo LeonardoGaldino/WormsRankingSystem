@@ -43,6 +43,8 @@ int main() {
         WormsGame game = WormsGame(hProcess, &shouldUploadData, 1000);
 
         game.watchGame();
+        // Wait for 10s before starting listening the next game
+        Sleep(10*1000);
     }
 
     return 0;
