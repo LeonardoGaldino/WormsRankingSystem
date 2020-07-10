@@ -1,6 +1,4 @@
 import React from 'react'
-import RankingHistoryChart from './RankingHistoryChart.js'
-
 import Button from '@material-ui/core/Button';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -9,10 +7,35 @@ import Dialog from '@material-ui/core/Dialog';
 import Divider from '@material-ui/core/Divider';
 import InfoIcon from '@material-ui/icons/Info';
 
+import RankingHistoryChart from './RankingHistoryChart.js'
+import {API_ENDPOINT} from '../../env.js';
+
 class RankingModal extends React.Component {
+
+    state = {
+        rankingData: null,
+    }
+
+    rankingHistoryRequestPath = '/worms/api/player/ranking_history';
 
     handleClose = () => {
         this.props.onModalClose(null);
+        this.setState({
+            rankingData: null,
+        })
+    }
+
+    async fetchRankingData(){
+        let url = new URL(API_ENDPOINT + this.rankingHistoryRequestPath);
+        url.searchParams.append('player_name', this.props.playerName);
+  
+        let res = await fetch(url);
+        let resJSON = await res.json();
+  
+        this.setState((state, _) => ({
+            ...state,
+            rankingData: resJSON,
+        }));
     }
 
     render() {
@@ -20,11 +43,12 @@ class RankingModal extends React.Component {
             <Dialog
                 maxWidth='md'
                 fullWidth={true}
-                open={this.props.name !== null}
+                open={this.props.playerName !== null}
+                onEntering={this.fetchRankingData.bind(this)}
                 onClose={this.handleClose}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description">
-                    <DialogTitle id="alert-dialog-title">{this.props.name}'s ranking history</DialogTitle>
+                    <DialogTitle id="alert-dialog-title">{this.props.playerName}'s ranking history</DialogTitle>
     
                     <Divider />
     
@@ -33,7 +57,7 @@ class RankingModal extends React.Component {
                             <InfoIcon style={{position: 'relative', top: 4}} color={'primary'} fontSize={'small'}></InfoIcon> Click on a point to see game details 
                         </p>
 
-                        <RankingHistoryChart player={this.props.name}></RankingHistoryChart>
+                        <RankingHistoryChart rankingData={this.state.rankingData}></RankingHistoryChart>
                     </DialogContent>
     
                     <Divider />

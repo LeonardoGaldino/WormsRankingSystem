@@ -5,12 +5,12 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow'
-import RankingNumberTableCell from './RankingNumberTableCell.js'
-import RankingModal from './RankingModal.js'
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 
-import {API_ENDPOINT} from '../env.js'
+import RankingNumberTableCell from './RankingNumberTableCell.js'
+import RankingModal from './RankingModal.js'
+import {API_ENDPOINT} from '../../env.js'
 
 
 class RankingTable extends React.Component {
@@ -81,7 +81,7 @@ class RankingTable extends React.Component {
               </Table>
               <RankingModal
                   onModalClose={this.changeSelectedPlayer.bind(this)}
-                  name={this.state.selectedPlayerName}
+                  playerName={this.state.selectedPlayerName}
                 >
               </RankingModal>
         </Paper>

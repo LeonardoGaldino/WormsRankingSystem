@@ -2,9 +2,9 @@ import React from 'react';
 import Container from '@material-ui/core/Container';
 
 import './App.css';
-import RankingTable from './components/RankingTable.js';
-import Games from './components/Games.js';
-import HelpSection from './components/HelpSection.js';
+import RankingTable from './components/RankingTable/RankingTable.js';
+import Games from './components/Games/Games.js';
+import HelpSection from './components/Help/HelpSection.js';
 
 function App() {
   return (
