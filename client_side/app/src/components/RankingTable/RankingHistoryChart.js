@@ -93,10 +93,10 @@ class RankingHistoryChart extends React.Component {
 
         let lowestRanking = rankingDataWindow.length > 0 ? rankingDataWindow[0].y : 1500;
         let highestRanking = rankingDataWindow.length > 0 ? rankingDataWindow[0].y : 1500;
-        for(const rankingPoint in rankingDataWindow) {
+        rankingDataWindow.forEach(rankingPoint => {
             lowestRanking = Math.min(lowestRanking, rankingPoint.y);
             highestRanking = Math.max(highestRanking, rankingPoint.y);
-        }
+        });
 
         let ctx = document.getElementById('ranking-history-chart');
         ctx.style.backgroundColor = 'rgba(30,30,30,1)';
@@ -166,11 +166,13 @@ class RankingHistoryChart extends React.Component {
         if(this.props.rankingData !== null) {
             return <div>
                 <canvas id="ranking-history-chart"></canvas>
+
                 <GameModal gameId={this.state.selectedGame ? this.state.selectedGame.id : null}
                     changeSelectedGameCallback={this.changeSelectedGame.bind(this)}
                     closeModalCallback={this.closeModal.bind(this)}
                 >
                 </GameModal>
+
                 <div style={{marginTop: 10, textAlign: 'center'}}>
                     <Typography id="range-slider" gutterBottom>
                         Games date range
