@@ -53,8 +53,13 @@ class RankingModal extends React.Component {
                     <Divider />
     
                     <DialogContent>
+                        <p style={{marginBottom: 0, marginTop: 0}}> 
+                            <InfoIcon style={{position: 'relative', top: 4}} color={'primary'} fontSize={'small'}></InfoIcon> 
+                            Click on a point to see game details 
+                        </p>
                         <p style={{marginBottom: 8, marginTop: 0}}> 
-                            <InfoIcon style={{position: 'relative', top: 4}} color={'primary'} fontSize={'small'}></InfoIcon> Click on a point to see game details 
+                            <InfoIcon style={{position: 'relative', top: 4}} color={'primary'} fontSize={'small'}></InfoIcon> 
+                            Drag slider below the chart to filter game to a specific time window
                         </p>
 
                         <RankingHistoryChart rankingData={this.state.rankingData}></RankingHistoryChart>
