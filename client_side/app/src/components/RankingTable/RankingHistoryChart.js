@@ -174,19 +174,12 @@ class RankingHistoryChart extends React.Component {
     render(){
         if(this.props.rankingData !== null) {
             return <div>
-                <canvas id="ranking-history-chart"></canvas>
-
-                <GameModal gameId={this.state.selectedGame ? this.state.selectedGame.id : null}
-                    changeSelectedGameCallback={this.changeSelectedGame.bind(this)}
-                    closeModalCallback={this.closeModal.bind(this)}
-                >
-                </GameModal>
-
                 <div style={{marginTop: 10, textAlign: 'center'}}>
                     <Typography id="range-slider" gutterBottom>
                         Games date range
                     </Typography>
                     <Slider
+                        style={{paddingTop: 0}}
                         value={this.state.gamesRange}
                         max={this.props.rankingData.history.length}
                         onChange={(_, range) => {
@@ -201,6 +194,14 @@ class RankingHistoryChart extends React.Component {
                         getAriaValueText={() => 'kappa'}
                     />
                 </div>
+
+                <canvas id="ranking-history-chart"></canvas>
+
+                <GameModal gameId={this.state.selectedGame ? this.state.selectedGame.id : null}
+                    changeSelectedGameCallback={this.changeSelectedGame.bind(this)}
+                    closeModalCallback={this.closeModal.bind(this)}
+                >
+                </GameModal>
             </div>
         } else {
             return <div style={{textAlign: 'center'}}>
