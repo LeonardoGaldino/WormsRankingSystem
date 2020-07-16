@@ -10,8 +10,8 @@ function App() {
   return (
     <div className="App">
       <Container maxWidth={'md'}>
-        <h1 style={{display: 'inline-block'}}>Worms Ranking System</h1>
-        <img style={{height: 100, position: 'relative', top: 20, marginLeft: 5}} src="./worms.png"></img>
+        <h1 className="mainHeader" style={{display: 'inline-block', marginRight: 5}}>Worms Ranking System</h1>
+        <img className="mainWormsImage" style={{height: 100, position: 'relative'}} src="./worms.png"></img>
         <RankingTable></RankingTable>
         <Games></Games>
         <HelpSection></HelpSection>

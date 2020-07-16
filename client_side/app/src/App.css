@@ -3,6 +3,22 @@
   margin-bottom: 30px;
 }
 
+@media screen and (max-width: 491px) {
+  .mainHeader {
+    margin-bottom: 0px;
+  }
+  
+  .mainWormsImage {
+    top: 0px; 
+  }
+}
+
+@media screen and (min-width: 492px) {
+  .mainWormsImage {
+    top: 25px; 
+  }
+}
+
 .icon-spinner {
   animation: spin-animation 1.5s infinite linear;
   display: inline-block;
