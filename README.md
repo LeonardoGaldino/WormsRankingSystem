@@ -7,4 +7,5 @@ Worms Ranking System is a ranking system for Worms Armageddon version 3.7.2.1. I
 3. ClientSide: Module responsible for the [website](http://leonardogaldino.com/worms) where clients can see the ranking, graphs and details about how calculations are made.
 
 # Running
-Each module will have instructions on how to run it, its dependencies (not covered by its package manager) and dependencies on other modules (from this repository).
+- Each module will have instructions on how to run it, its dependencies (not covered by its package manager) and dependencies on other modules (from this repository).
+- Every module has a deps file on its top-level package describing which dependencies are needed in order to build/run. These dependencies are meant to be installed by OS package manager.
